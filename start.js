@@ -35,7 +35,7 @@ function sendRequestsToOracle(rows) {
 }
 
 function refund(contractRow) {
-	getMyAddressFromContract(contractRow.shared_address, (myAddress) => {
+	contract.getMyAddressFromContract(contractRow.shared_address, (myAddress) => {
 		if(contractRow.asset){
 			headlessWallet.sendAssetFromAddress(contractRow.asset, contractRow.amount, contractRow.shared_address, myAddress, null, (err) => {
 				if (err) return console.error(new Error(err));
@@ -300,13 +300,6 @@ function checkAndRetryUnlockContracts() {
 			}
 		});
 	});
-}
-
-function getMyAddressFromContract(shared_address, cb) {
-	let device = require('byteballcore/device');
-	db.query("SELECT address FROM shared_address_signing_paths WHERE shared_address = ? AND device_address = ? LIMIT 0,1", [shared_address, device.getMyDeviceAddress()], (rows)=>{
-		cb(rows[0].address);
-	})
 }
 
 eventBus.on('headless_wallet_ready', () => {

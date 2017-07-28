@@ -7,6 +7,14 @@ const headlessWallet = require('headless-byteball');
 const async = require('async');
 const conf = require('byteballcore/conf');
 
+function getMyAddressFromContract(shared_address, cb) {
+	db.query("SELECT address FROM shared_address_signing_paths WHERE shared_address = ? AND device_address = ? LIMIT 0,1", [shared_address, device.getMyDeviceAddress()], (rows)=>{
+		cb(rows[0].address);
+	})
+}
+
+exports.getMyAddressFromContract = getMyAddressFromContract;
+
 exports.checkAndRefundContractsTimeout = () => {
 	db.query("SELECT shared_address, peer_amount FROM data_feeds, contracts WHERE unit IN (\n\
 		SELECT unit_authors.unit FROM unit_authors JOIN units USING(unit)\n\
@@ -34,17 +42,17 @@ exports.checkAndRefundContractsTimeout = () => {
 			});
 		}, () => {
 			if (arrFullyFundedAddresses.length)
-				db.query("UPDATE contracts SET checked_timeout = 1, refunded = 0 WHERE shared_address IN (?)", [arrFullyFundedAddresses], () => {});
+				db.query("UPDATE contracts SET checked_timeout = 1, refunded = 0 WHERE shared_address IN (?)", [arrFullyFundedAddresses]);
 
 			if (!arrAddressesToRefund.length) return;
-			headlessWallet.issueOrSelectNextMainAddress((myAddress) => {
-				async.each(arrAddressesToRefund, (address, callback) => {
+			async.each(arrAddressesToRefund, (address, callback) => {
+				getMyAddressFromContract(address, myAddress => {
 					headlessWallet.sendAllBytesFromAddress(address, myAddress, null, (err) => {
 						if (err) {
 							console.error(new Error(err));
 							arrAddressesToRefund.splice(arrAddressesToRefund.indexOf(address), 1);
 						}else {
-							db.query("UPDATE contracts SET checked_timeout = 1, refunded = 1 WHERE shared_address =?", [address], () => {});
+							db.query("UPDATE contracts SET checked_timeout = 1, refunded = 1 WHERE shared_address =?", [address]);
 						}
 						callback();
 					});
