@@ -6,20 +6,6 @@ const db = require('byteballcore/db');
 const moment = require('moment');
 const constants = require('byteballcore/constants');
 
-/*
- example:
- contract = {
- peerAddress: '',
- peerDeviceAddress: '',
- peerAmount: 11000,
- myAmount: 10000,
- feed_name: 'BTC_USD',
- relation: '>',
- feedValue: '1',
- expiry: 1, //days
- timeout: 4 //hours
- }
- */
 
 module.exports = (myAddress, event_date, contract, cb) => {
 	let device = require('byteballcore/device.js');
@@ -42,12 +28,12 @@ module.exports = (myAddress, event_date, contract, cb) => {
 
 	if (contract.myAsset === "base") contract.myAmount *= conf.unitValue;
 	if (contract.peerAsset === "base") contract.peerAmount *= conf.unitValue;
-	if (contract.myAmount === contract.peerAmount) {
-		contract.myAmount += 1;
-	}
 
 	contract.myAmount = Math.round(contract.myAmount);
 	contract.peerAmount = Math.round(contract.peerAmount);
+	if (contract.myAmount === contract.peerAmount) {
+		contract.myAmount += 1;
+	}
 
 	readLastMainChainIndex((err, last_mci) => {
 		if (err) return cb(err);
@@ -84,6 +70,7 @@ module.exports = (myAddress, event_date, contract, cb) => {
 								arrEventCondition,
 								['has', {
 									what: 'output',
+									asset: contract.peerAsset,
 									address: data_address,
 									amount: contract.peerAmount + contract.myAmount
 								}]
