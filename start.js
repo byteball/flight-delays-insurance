@@ -37,12 +37,12 @@ function sendRequestsToOracle(rows) {
 function refund(contractRow) {
 	getMyAddressFromContract(contractRow.shared_address, (myAddress) => {
 		if(contractRow.asset){
-			headlessWallet.sendAssetFromSharedAddress(contractRow.asset, contractRow.amount, null, contractRow.shared_address, myAddress, null, (err) => {
+			headlessWallet.sendAssetFromAddress(contractRow.asset, contractRow.amount, contractRow.shared_address, myAddress, null, (err) => {
 				if (err) return console.error(new Error(err));
 				contract.setUnlockedContract(contractRow.shared_address);
 			});
 		}else {
-			headlessWallet.sendAllBytesFromSharedAddress(contractRow.shared_address, myAddress, null, (err) => {
+			headlessWallet.sendAllBytesFromAddress(contractRow.shared_address, myAddress, null, (err) => {
 				if (err) return console.error(new Error(err));
 				contract.setUnlockedContract(contractRow.shared_address);
 			});
@@ -53,7 +53,7 @@ function refund(contractRow) {
 function payToPeer(contractRow) {
 	let device = require('byteballcore/device');
 	if (contractRow.asset) {
-		headlessWallet.sendAssetFromSharedAddress(contractRow.asset, contractRow.amount, null, contractRow.shared_address, contractRow.peer_address, contractRow.peer_device_address, (err) => {
+		headlessWallet.sendAssetFromAddress(contractRow.asset, contractRow.amount, contractRow.shared_address, contractRow.peer_address, contractRow.peer_device_address, (err) => {
 			if (err) return console.error(new Error(err));
 			contract.setUnlockedContract(contractRow.shared_address);
 			device.sendMessageToDevice(contractRow.peer_device_address, 'text', texts.weSentPayment());

@@ -39,7 +39,7 @@ exports.checkAndRefundContractsTimeout = () => {
 			if (!arrAddressesToRefund.length) return;
 			headlessWallet.issueOrSelectNextMainAddress((myAddress) => {
 				async.each(arrAddressesToRefund, (address, callback) => {
-					headlessWallet.sendAllBytesFromSharedAddress(address, myAddress, null, (err) => {
+					headlessWallet.sendAllBytesFromAddress(address, myAddress, null, (err) => {
 						if (err) {
 							console.error(new Error(err));
 							arrAddressesToRefund.splice(arrAddressesToRefund.indexOf(address), 1);
