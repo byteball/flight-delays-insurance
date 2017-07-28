@@ -38,12 +38,12 @@ function refund(contractRow) {
 	contract.getMyAddressFromContract(contractRow.shared_address, (myAddress) => {
 		if(contractRow.asset){
 			headlessWallet.sendAssetFromAddress(contractRow.asset, contractRow.amount, contractRow.shared_address, myAddress, null, (err) => {
-				if (err) return console.error(new Error(err));
+				if (err) return notifications.notifyAdmin('refund sendAssetFromAddress failed', err);
 				contract.setUnlockedContract(contractRow.shared_address);
 			});
 		}else {
 			headlessWallet.sendAllBytesFromAddress(contractRow.shared_address, myAddress, null, (err) => {
-				if (err) return console.error(new Error(err));
+				if (err) return notifications.notifyAdmin('refund sendAllBytesFromAddress failed', err);
 				contract.setUnlockedContract(contractRow.shared_address);
 			});
 		}
@@ -54,7 +54,7 @@ function payToPeer(contractRow) {
 	let device = require('byteballcore/device');
 	if (contractRow.asset) {
 		headlessWallet.sendAssetFromAddress(contractRow.asset, contractRow.amount, contractRow.shared_address, contractRow.peer_address, contractRow.peer_device_address, (err) => {
-			if (err) return console.error(new Error(err));
+			if (err) return notifications.notifyAdmin('payToPeer sendAssetFromAddress failed', err);
 			contract.setUnlockedContract(contractRow.shared_address);
 			device.sendMessageToDevice(contractRow.peer_device_address, 'text', texts.weSentPayment());
 		});
@@ -178,7 +178,6 @@ eventBus.on('text', (from_address, text) => {
 							timeout: 4 //hours
 						}, function (err, paymentRequestText) {
 							if (err) {
-								console.error(new Error('offerContract error: ' + JSON.stringify(err)));
 								notifications.notifyAdmin('offerContract error', JSON.stringify(err));
 								return device.sendMessageToDevice(from_address, 'text', texts.errorOfferContract());
 							}
@@ -303,7 +302,7 @@ function checkAndRetryUnlockContracts() {
 }
 
 eventBus.on('headless_wallet_ready', () => {
-	let error = '';
+	var error = '';
 	let arrDbName = ['flightstats_ratings', 'states', 'contracts'];
 	db.query("SELECT name FROM sqlite_master WHERE type='table' AND name IN (?)", [arrDbName], (rows) => {
 			if (rows.length !== arrDbName.length) error += texts.errorInitSql();
@@ -314,10 +313,8 @@ eventBus.on('headless_wallet_ready', () => {
 
 			if (conf.analysisOfRealTimeDelays && (!conf.flightstats.appId || !conf.flightstats.appKey || !conf.profitMargin)) error += texts.errorFlightstats();
 
-			if (error) {
-				console.error(new Error(error));
-				process.exit(1);
-			}
+			if (error)
+				throw new Error(error);
 
 			getLastAddress((address) => {
 				my_address = address;
@@ -329,10 +326,8 @@ eventBus.on('headless_wallet_ready', () => {
 			correspondents.findCorrespondentByPairingCode(conf.oracle_pairing_code, (correspondent) => {
 				if (!correspondent) {
 					correspondents.addCorrespondent(conf.oracle_pairing_code, 'flight oracle', (err, device_address) => {
-						if (err) {
-							console.error(new Error(error));
-							process.exit(1);
-						}
+						if (err)
+							throw new Error(err);
 						oracle_device_address = device_address;
 						getListContractsAndSendRequest();
 					});

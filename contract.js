@@ -6,6 +6,7 @@ const device = require('byteballcore/device');
 const headlessWallet = require('headless-byteball');
 const async = require('async');
 const conf = require('byteballcore/conf');
+const notifications = require('./notifications.js');
 
 function getMyAddressFromContract(shared_address, cb) {
 	db.query("SELECT address FROM shared_address_signing_paths WHERE shared_address = ? AND device_address = ? LIMIT 0,1", [shared_address, device.getMyDeviceAddress()], (rows)=>{
@@ -29,7 +30,6 @@ exports.checkAndRefundContractsTimeout = () => {
 		AND contracts.timeout < data_feeds.int_value", 
 		[conf.TIMESTAMPER_ADDRESS], 
 		rows => {
-			console.error(new Error(rows.length));
 			if (!rows.length) return;
 			let arrAddressesToRefund = [];
 			let arrFullyFundedAddresses = [];
@@ -53,7 +53,7 @@ exports.checkAndRefundContractsTimeout = () => {
 					getMyAddressFromContract(address, myAddress => {
 						headlessWallet.sendAllBytesFromAddress(address, myAddress, null, (err) => {
 							if (err) {
-								console.error(new Error(err));
+								notifications.notifyAdmin('timeout refund failed', err);
 								arrAddressesToRefund.splice(arrAddressesToRefund.indexOf(address), 1);
 							}else {
 								db.query("UPDATE contracts SET checked_timeout = 1, refunded = 1 WHERE shared_address =?", [address]);
