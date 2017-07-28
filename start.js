@@ -59,7 +59,7 @@ function payToPeer(contractRow) {
 			device.sendMessageToDevice(contractRow.peer_device_address, 'text', texts.weSentPayment());
 		});
 	} else {
-		device.sendMessageToDevice(contractRow.peer_device_address, 'text', texts.contractStable());
+		device.sendMessageToDevice(contractRow.peer_device_address, 'text', texts.pleaseUnlock());
 		contract.setUnlockedContract(contractRow.shared_address);
 	}
 }
@@ -88,7 +88,7 @@ function checkStatusOfContracts(rows) {
 						}
 						contract.setWinner(contractRow.feed_name, 'peer');
 					} else {
-						device.sendMessageToDevice(contractRow.peer_device_address, 'text', texts.arriveOnTime());
+						device.sendMessageToDevice(contractRow.peer_device_address, 'text', texts.arrivedOnTime());
 						if (row.is_stable) {
 							refund(contractRow);
 						} else {

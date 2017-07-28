@@ -6,7 +6,7 @@ const moment = require('moment');
 
 
 exports.flight = () => {
-	return `Please write the name of the flight. (Example: BA950 ${moment().add(1, 'days').format("DD.MM.YYYY")})`;
+	return `Please write the flight number and date. (Example: BA950 ${moment().add(2, 'days').format("DD.MM.YYYY")})`;
 };
 
 exports.delay = () => {
@@ -24,11 +24,11 @@ exports.compensation = () => {
 };
 
 exports.insertMyAddress = () => {
-	return 'To continue, send me your address. (Insert my address)';
+	return 'To continue, send me your address (click ... and Insert my address).';
 };
 
 exports.edit = () => {
-	return `What do you want to change?
+	return `What would you like to change?
             [Flight](command:flight)\t[Delay](command:delay)\t[Compensation](command:compensation)`;
 };
 
@@ -36,16 +36,16 @@ exports.total = (flight, delay, compensation, price) => {
 	return `Flight: ${flight}\nDelay: ${delay} minutes\nCompensation: ${compensation} ${conf.defaultNameAsset}\n-----------------------------\nPrice: ${price} ${conf.defaultNameAsset}\n[OK](command:${flight} ${delay} minutes ${compensation} ok)\t[Edit](command:edit)`;
 };
 
-exports.arriveOnTime = () => {
-	return 'Congratulations on the arrival on time.';
+exports.arrivedOnTime = () => {
+	return 'Congratulations, your flight arrived on time.';
 };
 
-exports.contractStable = () => {
-	return 'You can withdraw funds from the contract.';
+exports.pleaseUnlock = () => {
+	return 'Your flight was delayed, please withdraw your funds from the insurance smart address.';
 };
 
 exports.weSentPayment = () =>{
-	return 'We sent you a payment of money from insurance.';
+	return 'Your flight was delayed, we sent you your compensation.';
 };
 
 //errors
@@ -78,11 +78,11 @@ exports.errorValidAddress = () => {
 };
 
 exports.errorValidDate = () => {
-	return 'Please enter a valid date';
+	return 'Please enter a valid date in the format DD.MM.YYYY';
 };
 
 exports.errorOfferContract = () => {
-	return 'An error occurred while creating the contract, please try again later';
+	return 'An error occurred while creating the contract, please try again in 10 minutes.';
 };
 
 exports.errorNonInsurable = () => {
@@ -94,5 +94,5 @@ exports.errorMinDaysBeforeFlight = (days) => {
 };
 
 exports.errorMaxMonthsBeforeFlight = (months) => {
-	return "Maximum month before flight: " + months;
+	return "Maximum months before flight: " + months;
 };
