@@ -13,22 +13,20 @@ exports.storage = 'sqlite';
 
 exports.hub = 'byteball.org/bb';
 exports.deviceName = 'Insurance';
-exports.permanent_paring_secret = '0000';
+exports.permanent_pairing_secret = '0000';
 exports.control_addresses = [];
 exports.payout_address = 'WHERE THE MONEY CAN BE SENT TO';
 
 exports.bIgnoreUnpairRequests = true;
 exports.bSingleAddress = false;
-exports.THRESHOLD_DISTANCE = 20;
-exports.MIN_AVAILABLE_WITNESSINGS = 100;
 exports.KEYS_FILENAME = 'keys.json';
 
 //email
 exports.useSmtp = false;
 
 //contract
-exports.oracle_address = 'HMW27QM7QTVRGAIIHUW7L2ZQ4N3TOJDU';
-exports.oracle_pairing_code = 'ArHXmPo3WEm6OERICadr6qcTU67lcQ0YLiUntuZEesXi@byteball.org/bb-test#0000';
+exports.oracle_address = 'GFK3RDAPQLLNCMQEVGGD2KCPZTLSG3HN';
+exports.oracle_pairing_code = 'AuP4ngdv0S/rok+IaW1q2D6ye72eXLl3h+CqXNXzkBXn@byteball.org/bb#0000';
 exports.TIMESTAMPER_ADDRESS = 'I2ADHGP4HL6J37NQAD73J7E5SKFIXJOT'; // isTestnet ? 'OPNUXBRSSQQGHKQNEPD2GLWQYEUY5XLD' : 'I2ADHGP4HL6J37NQAD73J7E5SKFIXJOT'
 
 
@@ -45,14 +43,14 @@ exports.delayTime = [
 ];
 
 //bot
-exports.contractTimeout = 4; // hours
-exports.contractExpiry = 1; //days
+exports.contractTimeout = 1; // hours
+exports.contractExpiry = 2; //days
 
 exports.defaultPriceInPercent = {
-	gt0: 20,
+	gt0: 100,
 	gt15: 30,
-	gt30: 40,
-	gt45: 50
+	gt30: 20,
+	gt45: 15
 };
 
 exports.defaultAsset = 'base';
@@ -64,9 +62,9 @@ exports.maxCompensation = 100; //GB
 exports.minDaysBeforeFlight = 1;
 exports.maxMonthsBeforeFlight = 3;
 
-exports.analysisOfRealTimeDelays = false;
-exports.minObservations = 20;
-exports.profitMargin = 5; //% if use analysisOfRealTimeDelays
+exports.analysisOfRealTimeDelays = true;
+exports.minObservations = 10;
+exports.profitMargin = 5; //% if using analysisOfRealTimeDelays
 exports.maxPriceInPercent = 90;
 
 exports.nonInsurableFlights = ['BA0000'];
