@@ -27,10 +27,10 @@ CREATE TABLE contracts (
 	delay INT NOT NULL,
 	shared_address CHAR(32) NOT NULL,
 	timeout BIGINT NOT NULL,
-	checked_timeout INT NOT NULL DEFAULT 0,
+	checked_timeout_date TIMESTAMP NULL,
 	refunded INT NOT NULL DEFAULT 0,
-	checked_flight INT NOT NULL DEFAULT 0,
-	unlocked INT NOT NULL DEFAULT 0,
+	checked_flight_date TIMESTAMP NULL,
+	unlocked_date TIMESTAMP NULL,
 	creation_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	peer_address CHAR(32) NOT NULL,
 	peer_device_address CHAR(33) NOT NULL,
@@ -38,7 +38,12 @@ CREATE TABLE contracts (
 	asset CHAR(44),
 	amount INT NOT NULL,
 	winner CHAR(10),
+	unlock_unit CHAR(44),
 	PRIMARY KEY(shared_address),
 	FOREIGN KEY (shared_address) REFERENCES shared_addresses(shared_address),
+	FOREIGN KEY (unlock_unit) REFERENCES units(unit),
 	FOREIGN KEY (asset) REFERENCES assets(unit)
 );
+
+CREATE INDEX byCheckedTimeoutDate ON contracts(checked_timeout_date);
+CREATE INDEX byCheckedFlightDate ON contracts(checked_flight_date);

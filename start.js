@@ -36,14 +36,14 @@ function sendRequestsToOracle(rows) {
 function refund(contractRow) {
 	contract.getMyAddressFromContract(contractRow.shared_address, (myAddress) => {
 		if(contractRow.asset){
-			headlessWallet.sendAssetFromAddress(contractRow.asset, contractRow.amount, contractRow.shared_address, myAddress, null, (err) => {
+			headlessWallet.sendAssetFromAddress(contractRow.asset, contractRow.amount, contractRow.shared_address, myAddress, null, (err, unit) => {
 				if (err) return notifications.notifyAdmin('refund sendAssetFromAddress failed', err);
-				contract.setUnlockedContract(contractRow.shared_address);
+				contract.setUnlockedContract(contractRow.shared_address, unit);
 			});
 		}else {
-			headlessWallet.sendAllBytesFromAddress(contractRow.shared_address, myAddress, null, (err) => {
+			headlessWallet.sendAllBytesFromAddress(contractRow.shared_address, myAddress, null, (err, unit) => {
 				if (err) return notifications.notifyAdmin('refund sendAllBytesFromAddress failed', err);
-				contract.setUnlockedContract(contractRow.shared_address);
+				contract.setUnlockedContract(contractRow.shared_address, unit);
 			});
 		}
 	});
@@ -52,14 +52,14 @@ function refund(contractRow) {
 function payToPeer(contractRow) {
 	let device = require('byteballcore/device');
 	if (contractRow.asset) {
-		headlessWallet.sendAssetFromAddress(contractRow.asset, contractRow.amount, contractRow.shared_address, contractRow.peer_address, contractRow.peer_device_address, (err) => {
+		headlessWallet.sendAssetFromAddress(contractRow.asset, contractRow.amount, contractRow.shared_address, contractRow.peer_address, contractRow.peer_device_address, (err, unit) => {
 			if (err) return notifications.notifyAdmin('payToPeer sendAssetFromAddress failed', err);
-			contract.setUnlockedContract(contractRow.shared_address);
+			contract.setUnlockedContract(contractRow.shared_address, unit);
 			device.sendMessageToDevice(contractRow.peer_device_address, 'text', texts.weSentPayment());
 		});
 	} else {
 		device.sendMessageToDevice(contractRow.peer_device_address, 'text', texts.pleaseUnlock());
-		contract.setUnlockedContract(contractRow.shared_address);
+		contract.setUnlockedContract(contractRow.shared_address, null);
 	}
 }
 

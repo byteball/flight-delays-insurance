@@ -26,7 +26,7 @@ exports.checkAndRefundContractsTimeout = () => {
 			ORDER BY unit_authors.rowid DESC LIMIT 0,1\n\
 		)\n\
 		AND data_feeds.feed_name = 'timestamp'\n\
-		AND contracts.checked_timeout = 0\n\
+		AND contracts.checked_timeout_date IS NULL \n\
 		AND contracts.timeout < data_feeds.int_value", 
 		[conf.TIMESTAMPER_ADDRESS], 
 		rows => {
@@ -46,17 +46,17 @@ exports.checkAndRefundContractsTimeout = () => {
 				});
 			}, () => {
 				if (arrFullyFundedAddresses.length)
-					db.query("UPDATE contracts SET checked_timeout = 1, refunded = 0 WHERE shared_address IN (?)", [arrFullyFundedAddresses]);
+					db.query("UPDATE contracts SET checked_timeout_date="+db.getNow()+", refunded=0 WHERE shared_address IN (?)", [arrFullyFundedAddresses]);
 
 				if (!arrAddressesToRefund.length) return;
 				async.each(arrAddressesToRefund, (address, callback) => {
 					getMyAddressFromContract(address, myAddress => {
-						headlessWallet.sendAllBytesFromAddress(address, myAddress, null, (err) => {
+						headlessWallet.sendAllBytesFromAddress(address, myAddress, null, (err, unit) => {
 							if (err) {
 								notifications.notifyAdmin('timeout refund failed', err);
 								arrAddressesToRefund.splice(arrAddressesToRefund.indexOf(address), 1);
 							}else {
-								db.query("UPDATE contracts SET checked_timeout = 1, refunded = 1 WHERE shared_address =?", [address]);
+								db.query("UPDATE contracts SET checked_timeout_date="+db.getNow()+", refunded = 1, unlock_unit=? WHERE shared_address=?", [unit, address]);
 							}
 							callback();
 						});
@@ -68,7 +68,7 @@ exports.checkAndRefundContractsTimeout = () => {
 };
 
 exports.getListOfContactsForVerification = (cb) => {
-	db.query("SELECT * FROM contracts WHERE checked_timeout = 1 AND refunded = 0 AND checked_flight = 0 AND date < " + db.addTime('-2 days'), cb);
+	db.query("SELECT * FROM contracts WHERE checked_timeout_date IS NOT NULL AND refunded = 0 AND checked_flight_date IS NULL AND date < " + db.addTime('-2 days'), cb);
 };
 
 exports.getContractsByFeedName = (feed_name, cb) => {
@@ -76,13 +76,13 @@ exports.getContractsByFeedName = (feed_name, cb) => {
 };
 
 exports.setWinner = (feed_name, winner) => {
-	db.query("UPDATE contracts SET checked_flight = 1, winner = ? WHERE feed_name = ?", [winner, feed_name], () => {});
+	db.query("UPDATE contracts SET checked_flight_date="+db.getNow()+", winner = ? WHERE feed_name = ?", [winner, feed_name], () => {});
 };
 
 exports.getContractsToRetryUnlock = (cb) => {
-	db.query("SELECT * FROM contracts WHERE checked_timeout = 1 AND checked_flight = 1 AND unlocked = 0", cb)
+	db.query("SELECT * FROM contracts WHERE checked_timeout_date IS NOT NULL AND checked_flight_date IS NOT NULL AND unlocked_date IS NULL", cb)
 };
 
-exports.setUnlockedContract = (shared_address) => {
-	db.query("UPDATE contracts SET unlocked = 1 WHERE shared_address = ?", [shared_address], () => {});
+exports.setUnlockedContract = (shared_address, unit) => {
+	db.query("UPDATE contracts SET unlocked_date="+db.getNow()+", unit=? WHERE shared_address = ?", [unit, shared_address], () => {});
 };
