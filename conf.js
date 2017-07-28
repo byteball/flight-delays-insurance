@@ -1,8 +1,6 @@
 /*jslint node: true */
 "use strict";
 
-const constants = require('byteballcore/constants');
-
 exports.port = null;
 //exports.myUrl = 'wss://mydomain.com/bb';
 exports.bServeAsHub = false;
@@ -12,7 +10,7 @@ exports.storage = 'sqlite';
 
 
 exports.hub = 'byteball.org/bb';
-exports.deviceName = 'Insurance';
+exports.deviceName = 'Flight Delay Insurance';
 exports.permanent_pairing_secret = '0000';
 exports.control_addresses = [];
 exports.payout_address = 'WHERE THE MONEY CAN BE SENT TO';

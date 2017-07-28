@@ -257,7 +257,7 @@ eventBus.on('text', (from_address, text) => {
 		if (!state.delay) return device.sendMessageToDevice(from_address, 'text', texts.delay());
 		if (!state.compensation) return device.sendMessageToDevice(from_address, 'text', texts.compensation());
 
-		if (/OK/.test(ucText)) {
+		if (/BUY$/.test(ucText)) {
 			return device.sendMessageToDevice(from_address, 'text', texts.insertMyAddress());
 		} else if (ucText === 'EDIT') {
 			return device.sendMessageToDevice(from_address, 'text', texts.edit());

@@ -6,7 +6,7 @@ const moment = require('moment');
 
 
 exports.flight = () => {
-	return `Please write the flight number and date. (Example: BA950 ${moment().add(2, 'days').format("DD.MM.YYYY")})`;
+	return `Please write the flight number and date in DD.MM.YYYY format. (Example: BA950 ${moment().add(2, 'days').format("DD.MM.YYYY")})`;
 };
 
 exports.delay = () => {
@@ -15,8 +15,7 @@ exports.delay = () => {
 		timeButtons += `[${value.text}](command:${value.minutes} minutes)\t`;
 	});
 
-	return `Delay time:
-            ${timeButtons}`;
+	return `Choose the delay time. You'll be paid if the actual delay exceeds this number or the flight is canceled.\n${timeButtons}`;
 };
 
 exports.compensation = () => {
@@ -33,7 +32,7 @@ exports.edit = () => {
 };
 
 exports.total = (flight, delay, compensation, price) => {
-	return `Flight: ${flight}\nDelay: ${delay} minutes\nCompensation: ${compensation} ${conf.defaultAssetName}\n-----------------------------\nPrice: ${price} ${conf.defaultAssetName}\n[OK](command:${flight} ${delay} minutes ${compensation} ok)\t[Edit](command:edit)`;
+	return `Flight: ${flight}\nDelay: ${delay} minutes\nCompensation: ${compensation} ${conf.defaultAssetName}\n-----------------------------\nPrice: ${price} ${conf.defaultAssetName}\n[Buy](command:${flight} ${delay} minutes ${compensation} buy)\t[Edit](command:edit)`;
 };
 
 exports.arrivedOnTime = () => {
