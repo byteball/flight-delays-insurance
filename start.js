@@ -18,7 +18,7 @@ const async = require('async');
 
 let oracle_device_address;
 
-let arrWaitingStableUnits = [];
+let assocWaitingStableFeednamesByUnits = {};
 
 headlessWallet.setupChatEventHandlers();
 
@@ -82,7 +82,7 @@ function checkStatusOfContracts(rows) {
 						if (row.is_stable) {
 							payToPeer(contractRow);
 						} else {
-							if (arrWaitingStableUnits.indexOf(row.unit) === -1) arrWaitingStableUnits.push(row.unit);
+							assocWaitingStableFeednamesByUnits[row.unit] = row.feed_name;
 						}
 						contract.setWinner(contractRow.feed_name, 'peer');
 					} else {
@@ -90,7 +90,7 @@ function checkStatusOfContracts(rows) {
 						if (row.is_stable) {
 							refund(contractRow);
 						} else {
-							if (arrWaitingStableUnits.indexOf(row.unit) === -1) arrWaitingStableUnits.push(row.unit);
+							assocWaitingStableFeednamesByUnits[row.unit] = row.feed_name;
 						}
 						contract.setWinner(contractRow.feed_name, 'me');
 					}
@@ -101,22 +101,23 @@ function checkStatusOfContracts(rows) {
 }
 
 eventBus.on('mci_became_stable', (mci) => {
-	let device = require('byteballcore/device');
-	db.query("SELECT unit FROM units WHERE main_chain_index = ?", [mci], (rows) => {
+	let arrWaitingStableUnits = Object.keys(assocWaitingStableFeednamesByUnits);
+	if (arrWaitingStableUnits.length === 0)
+		return;
+	db.query("SELECT unit FROM units WHERE main_chain_index = ? AND unit IN(?)", [mci, arrWaitingStableUnits], (rows) => {
 		rows.forEach((row) => {
-			if (arrWaitingStableUnits[row.unit]) {
-				contract.getContractsByFeedName(arrWaitingStableUnits[row.unit], (rowsContracts) => {
-					rowsContracts.forEach((contractRow) => {
-						if (contractRow.winner) {
-							if (contractRow.winner === 'me') {
-								refund(contractRow);
-							} else if (contractRow.winner === 'peer') {
-								payToPeer(contractRow);
-							}
+			contract.getContractsByFeedName(assocWaitingStableFeednamesByUnits[row.unit], (rowsContracts) => {
+				rowsContracts.forEach((contractRow) => {
+					if (contractRow.winner) {
+						if (contractRow.winner === 'me') {
+							refund(contractRow);
+						} else if (contractRow.winner === 'peer') {
+							payToPeer(contractRow);
 						}
-					});
+					}
 				});
-			}
+				delete assocWaitingStableFeednamesByUnits[row.unit];
+			});
 		});
 	});
 });
