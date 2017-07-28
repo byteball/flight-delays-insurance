@@ -173,8 +173,8 @@ eventBus.on('text', (from_address, text) => {
 							flight: state.flight,
 							relation: '>',
 							feedValue: state.delay,
-							expiry: 1, //days
-							timeout: 4 //hours
+							expiry: conf.contractExpiry, //days
+							timeout: conf.contractTimeout //hours
 						}, function (err, paymentRequestText) {
 							if (err) {
 								notifications.notifyAdmin('offerContract error', JSON.stringify(err));
