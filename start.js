@@ -304,38 +304,37 @@ eventBus.on('headless_wallet_ready', () => {
 	var error = '';
 	let arrDbName = ['flightstats_ratings', 'states', 'contracts'];
 	db.query("SELECT name FROM sqlite_master WHERE type='table' AND name IN (?)", [arrDbName], (rows) => {
-			if (rows.length !== arrDbName.length) error += texts.errorInitSql();
+		if (rows.length !== arrDbName.length) error += texts.errorInitSql();
 
-			if (conf.useSmtp && (!conf.smtpUser || !conf.smtpPassword || !conf.smtpHost)) error += texts.errorSmtp();
+		if (conf.useSmtp && (!conf.smtpUser || !conf.smtpPassword || !conf.smtpHost)) error += texts.errorSmtp();
 
-			if (!conf.admin_email || !conf.from_email) error += texts.errorEmail();
+		if (!conf.admin_email || !conf.from_email) error += texts.errorEmail();
 
-			if (conf.analysisOfRealTimeDelays && (!conf.flightstats.appId || !conf.flightstats.appKey || !conf.profitMargin)) error += texts.errorFlightstats();
+		if (conf.analysisOfRealTimeDelays && (!conf.flightstats.appId || !conf.flightstats.appKey || !conf.profitMargin)) error += texts.errorFlightstats();
 
-			if (error)
-				throw new Error(error);
+		if (error)
+			throw new Error(error);
 
-			setInterval(contract.checkAndRefundContractsTimeout, 3600 * 1000);
-			contract.checkAndRefundContractsTimeout();
+		setInterval(contract.checkAndRefundContractsTimeout, 3600 * 1000);
+		contract.checkAndRefundContractsTimeout();
 
-			correspondents.findCorrespondentByPairingCode(conf.oracle_pairing_code, (correspondent) => {
-				if (!correspondent) {
-					correspondents.addCorrespondent(conf.oracle_pairing_code, 'flight oracle', (err, device_address) => {
-						if (err)
-							throw new Error(err);
-						oracle_device_address = device_address;
-						getListContractsAndSendRequest();
-					});
-				} else {
-					oracle_device_address = correspondent.device_address;
+		correspondents.findCorrespondentByPairingCode(conf.oracle_pairing_code, (correspondent) => {
+			if (!correspondent) {
+				correspondents.addCorrespondent(conf.oracle_pairing_code, 'flight oracle', (err, device_address) => {
+					if (err)
+						throw new Error(err);
+					oracle_device_address = device_address;
 					getListContractsAndSendRequest();
-				}
-			});
+				});
+			} else {
+				oracle_device_address = correspondent.device_address;
+				getListContractsAndSendRequest();
+			}
+		});
 
-			setInterval(getListContractsAndSendRequest, 6 * 3600 * 1000);
+		setInterval(getListContractsAndSendRequest, 6 * 3600 * 1000);
 
-			checkAndRetryUnlockContracts();
-			setInterval(checkAndRetryUnlockContracts, 6 * 3600 * 1000);
-		}
-	);
+		checkAndRetryUnlockContracts();
+		setInterval(checkAndRetryUnlockContracts, 6 * 3600 * 1000);
+	});
 });
