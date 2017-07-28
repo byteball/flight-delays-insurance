@@ -72,9 +72,8 @@ function checkStatusOfContracts(rows) {
 		assocContractsByFeedName[row.feed_name].push(row);
 	});
 	db.query("SELECT data_feeds.feed_name, data_feeds.int_value, units.unit, units.is_stable\n\
-	FROM data_feeds, unit_authors JOIN units USING(unit)\n\
+	FROM data_feeds JOIN unit_authors USING(unit) JOIN units USING(unit)\n\
 	WHERE data_feeds.feed_name IN(?)\n\
-	AND unit_authors.unit = data_feeds.unit\n\
 	AND unit_authors.address = ?", [arrFeedNames, conf.oracle_address], (rows2) => {
 		rows2.forEach((row) => {
 			if (assocContractsByFeedName[row.feed_name]) {
