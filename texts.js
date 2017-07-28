@@ -20,7 +20,7 @@ exports.delay = () => {
 };
 
 exports.compensation = () => {
-	return `How much do you want to receive in case of flight delay? (${conf.defaultNameAsset})`;
+	return `How much do you want to receive in case of flight delay? (${conf.defaultAssetName})`;
 };
 
 exports.insertMyAddress = () => {
@@ -33,7 +33,7 @@ exports.edit = () => {
 };
 
 exports.total = (flight, delay, compensation, price) => {
-	return `Flight: ${flight}\nDelay: ${delay} minutes\nCompensation: ${compensation} ${conf.defaultNameAsset}\n-----------------------------\nPrice: ${price} ${conf.defaultNameAsset}\n[OK](command:${flight} ${delay} minutes ${compensation} ok)\t[Edit](command:edit)`;
+	return `Flight: ${flight}\nDelay: ${delay} minutes\nCompensation: ${compensation} ${conf.defaultAssetName}\n-----------------------------\nPrice: ${price} ${conf.defaultAssetName}\n[OK](command:${flight} ${delay} minutes ${compensation} ok)\t[Edit](command:edit)`;
 };
 
 exports.arrivedOnTime = () => {
@@ -66,11 +66,11 @@ exports.errorFlightstats = () => {
 };
 
 exports.errorMaxCompensation = () => {
-	return `Max compensation: ${conf.maxCompensation} ${conf.defaultNameAsset}`;
+	return `Max compensation: ${conf.maxCompensation} ${conf.defaultAssetName}`;
 };
 
 exports.errorMinCompensation = () => {
-	return `Min compensation: ${conf.minCompensation} ${conf.defaultNameAsset}`;
+	return `Min compensation: ${conf.minCompensation} ${conf.defaultAssetName}`;
 };
 
 exports.errorValidAddress = () => {

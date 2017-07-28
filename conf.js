@@ -56,7 +56,7 @@ exports.defaultPriceInPercent = {
 };
 
 exports.defaultAsset = 'base';
-exports.defaultNameAsset = ''; // change if you want to give your name of asset
+exports.defaultAssetName = ''; // change if you want to give your name of asset
 exports.unitValue = 1000000000; //GB
 exports.minCompensation = 0.00001; //GB - 0.00001 - 10000 bytes
 exports.maxCompensation = 100; //GB
@@ -76,7 +76,7 @@ exports.coefficientsForFlight = {SU0000: 1.2};
 exports.coefficientsForAirline = {SU: 1.2};
 
 
-if(!exports.defaultNameAsset) {
-	if (exports.defaultAsset === 'base') exports.defaultNameAsset = 'GB';
-	else exports.defaultNameAsset = exports.defaultAsset;
+if(!exports.defaultAssetName) {
+	if (exports.defaultAsset === 'base') exports.defaultAssetName = 'GB';
+	else exports.defaultAssetName = exports.defaultAsset;
 }
