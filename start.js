@@ -16,7 +16,6 @@ const contract = require('./contract');
 const wallet = require('byteballcore/wallet');
 const async = require('async');
 
-let my_address;
 let oracle_device_address;
 
 let arrWaitingStableUnits = [];
@@ -316,12 +315,8 @@ eventBus.on('headless_wallet_ready', () => {
 			if (error)
 				throw new Error(error);
 
-			getLastAddress((address) => {
-				my_address = address;
-
-				setInterval(contract.checkAndRefundContractsTimeout, 3600 * 1000);
-				contract.checkAndRefundContractsTimeout();
-			});
+			setInterval(contract.checkAndRefundContractsTimeout, 3600 * 1000);
+			contract.checkAndRefundContractsTimeout();
 
 			correspondents.findCorrespondentByPairingCode(conf.oracle_pairing_code, (correspondent) => {
 				if (!correspondent) {
