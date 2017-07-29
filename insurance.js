@@ -184,7 +184,7 @@ eventBus.on('text', (from_address, text) => {
 							state.delay = null;
 							state.compensation = null;
 							state.save();
-							return device.sendMessageToDevice(from_address, 'text', paymentRequestText);
+							return device.sendMessageToDevice(from_address, 'text', 'This is your contract, please check and pay within 15 minutes: '+paymentRequestText);
 						});
 					});
 				} else {
