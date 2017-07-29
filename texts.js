@@ -6,7 +6,7 @@ const moment = require('moment');
 
 
 exports.flight = () => {
-	return `Please write the flight number and date in DD.MM.YYYY format. (Example: BA950 ${moment().add(2, 'days').format("DD.MM.YYYY")})`;
+	return `Please write the flight number and date in DD.MM.YYYY format.\n\nExample: BA950 ${moment().add(2, 'days').format("DD.MM.YYYY")}`;
 };
 
 exports.delay = () => {
@@ -15,7 +15,7 @@ exports.delay = () => {
 		timeButtons += `[${value.text}](command:${value.minutes} minutes)\t`;
 	});
 
-	return `Choose the delay time. You'll be paid if the actual delay exceeds this number or the flight is canceled.\n${timeButtons}`;
+	return `Choose the delay time. You'll be paid if the actual delay is larger or the flight is canceled.\n${timeButtons}`;
 };
 
 exports.compensation = () => {
