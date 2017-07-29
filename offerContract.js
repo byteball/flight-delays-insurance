@@ -50,6 +50,21 @@ module.exports = (myAddress, event_date, contract, cb) => {
 		let data_device_address = (contract.data_party === 'me') ? device.getMyDeviceAddress() : contract.peerDeviceAddress;
 		let expiry_device_address = (contract.expiry_party === 'me') ? device.getMyDeviceAddress() : contract.peerDeviceAddress;
 		let timeout = Date.now() + Math.round(contract.timeout * 3600 * 1000);
+		let arrReverseCondition = ['in data feed', [[conf.oracle_address], contract.feed_name, contract.reverseRelation, contract.feedValue + '', last_mci]];
+		let arrMyCondition = (contract.peerAsset === "base") 
+			? arrReverseCondition 
+			: ['or', [
+				arrReverseCondition,
+				['and', [
+					arrEventCondition,
+					['has', {
+						what: 'output',
+						asset: contract.peerAsset,
+						address: data_address,
+						amount: contract.peerAmount + contract.myAmount
+					}]
+				]]
+			]];
 		let arrDefinition = ['or', [
 			['and', [
 				arrSeenCondition,
@@ -64,18 +79,7 @@ module.exports = (myAddress, event_date, contract, cb) => {
 					]],
 					['and', [
 						['address', myAddress],
-						['or', [
-							['in data feed', [[conf.oracle_address], contract.feed_name, contract.reverseRelation, contract.feedValue + '', last_mci]],
-							['and', [
-								arrEventCondition,
-								['has', {
-									what: 'output',
-									asset: contract.peerAsset,
-									address: data_address,
-									amount: contract.peerAmount + contract.myAmount
-								}]
-							]]
-						]]
+						arrMyCondition
 					]]
 				]]
 			]],
