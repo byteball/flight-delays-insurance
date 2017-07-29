@@ -163,7 +163,7 @@ eventBus.on('text', (from_address, text) => {
 			let minDay = moment().set("hours", 0).set("minutes", 0).set("seconds", 0).set('milliseconds', 0).add(conf.minDaysBeforeFlight, 'days').valueOf();
 			if (moment(state.flight.split(' ')[1], "DD.MM.YYYY").valueOf() >= minDay) {
 				if (moment(state.flight.split(' ')[1], "DD.MM.YYYY").valueOf() <= moment().add(conf.maxMonthsBeforeFlight, 'month').valueOf()) {
-					return getLastAddress((myAddress) => {
+					return headlessWallet.issueOrSelectNextMainAddress((myAddress) => {
 						offerFlightDelaysContract(myAddress, moment(state.flight.split(' ')[1], "DD.MM.YYYY"), {
 							peerAddress: ucText,
 							peerDeviceAddress: from_address,
@@ -272,13 +272,6 @@ eventBus.on('text', (from_address, text) => {
 	});
 });
 
-function getLastAddress(cb) {
-	headlessWallet.readSingleWallet((wallet) => {
-		db.query("SELECT address FROM my_addresses WHERE wallet=? ORDER BY creation_date DESC LIMIT 0, 1", [wallet], (rows) => {
-			cb(rows[0].address);
-		});
-	});
-}
 
 function getListContractsAndSendRequest() {
 	contract.getListOfContactsForVerification((rows) => {
