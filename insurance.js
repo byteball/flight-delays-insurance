@@ -127,7 +127,8 @@ eventBus.on('new_my_transactions', (arrUnits) => {
 	let device = require('byteballcore/device.js');
 	db.query(
 		"SELECT outputs.amount, peer_amount, outputs.asset AS received_asset, contracts.asset AS expected_asset, peer_device_address \n\
-		FROM outputs JOIN contracts ON address=shared_address WHERE unit IN(?)", 
+		FROM outputs JOIN contracts ON address=shared_address \n\
+		WHERE unit IN(?) AND NOT EXISTS (SELECT 1 FROM unit_authors CROSS JOIN my_addresses USING(address) WHERE unit_authors.unit=outputs.unit)", 
 		[arrUnits], 
 		function(rows){
 			rows.forEach(row => {
