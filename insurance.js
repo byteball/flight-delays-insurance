@@ -259,10 +259,10 @@ eventBus.on('text', (from_address, text) => {
 			state.delay = minutes;
 		}
 
-		if (/\b[0-9]+,[0-9]+\b/.test(ucText)) ucText = ucText.replace(',', '.');
-		if (/\b[0-9]+(\.[0-9]+)?\b/.test(ucText)) {
-			let compensation = parseFloat(ucText.match(/\b[0-9]+(\.[0-9]+)?\b/)[0]);
-			ucText = ucText.replace(ucText.match(/\b[0-9]+(\.[0-9]+)?\b/)[0], '').trim();
+		if (/\b\d+,\d+\b/.test(ucText)) ucText = ucText.replace(',', '.');
+		if (/[\d.]+\b/.test(ucText)) {
+			let compensation = parseFloat(ucText.match(/[\d.]+\b/)[0]);
+			ucText = ucText.replace(ucText.match(/[\d.]+\b/)[0], '').trim();
 			if (compensation > conf.maxCompensation) {
 				return device.sendMessageToDevice(from_address, 'text', texts.errorMaxCompensation());
 			} else if (compensation < conf.minCompensation) {
