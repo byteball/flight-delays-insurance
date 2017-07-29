@@ -295,9 +295,9 @@ function checkAndRetryUnlockContracts() {
 
 eventBus.on('headless_wallet_ready', () => {
 	var error = '';
-	let arrDbName = ['flightstats_ratings', 'states', 'contracts'];
-	db.query("SELECT name FROM sqlite_master WHERE type='table' AND name IN (?)", [arrDbName], (rows) => {
-		if (rows.length !== arrDbName.length) error += texts.errorInitSql();
+	let arrTableNames = ['flightstats_ratings', 'states', 'contracts'];
+	db.query("SELECT name FROM sqlite_master WHERE type='table' AND name IN (?)", [arrTableNames], (rows) => {
+		if (rows.length !== arrTableNames.length) error += texts.errorInitSql();
 
 		if (conf.useSmtp && (!conf.smtpUser || !conf.smtpPassword || !conf.smtpHost)) error += texts.errorSmtp();
 
