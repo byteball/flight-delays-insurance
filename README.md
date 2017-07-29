@@ -5,3 +5,15 @@ This chatbot sells insurance against flight delays.  When a customer wants to re
 ![Flight delay insurance chatbot](flight-delay-insurance.png)
 
 The quotes are based on ratings provided by Flightstats: https://developer.flightstats.com/api-docs/ratings/v1.
+
+## Install
+
+Install node.js 4+, clone the repository, then say
+```sh
+npm install
+```
+## Run
+```sh
+node insurance.js
+```
+The first time you run the script, it will give you instructions for initial setup.

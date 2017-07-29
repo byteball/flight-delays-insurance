@@ -49,7 +49,7 @@ exports.weSentPayment = () =>{
 
 //errors
 exports.errorInitSql = () => {
-	return 'please import init.sql file\n';
+	return 'please import insurance.sql file\n';
 };
 
 exports.errorSmtp = () => {
