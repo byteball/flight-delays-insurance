@@ -123,6 +123,25 @@ eventBus.on('mci_became_stable', (mci) => {
 });
 
 
+eventBus.on('new_my_transactions', (arrUnits) => {
+	let device = require('byteballcore/device.js');
+	db.query(
+		"SELECT outputs.amount, peer_amount, outputs.asset AS received_asset, contracts.asset AS expected_asset, peer_device_address \n\
+		FROM outputs JOIN contracts ON address=shared_address WHERE unit IN(?)", 
+		[arrUnits], 
+		function(rows){
+			rows.forEach(row => {
+				if (row.received_asset !== row.expected_asset)
+					return device.sendMessageToDevice(row.peer_device_address, 'text', "Received payment in wrong asset");
+				if (row.amount !== row.peer_amount)
+					return device.sendMessageToDevice(row.peer_device_address, 'text', "Received wrong amount: expected "+row.peer_amount+", received "+row.amount);
+				device.sendMessageToDevice(row.peer_device_address, 'text', "Received your payment.  Your insurance contract is now fully paid, we'll check the status of your flight and let you know.");
+			});
+		}
+	);
+});
+
+
 eventBus.on('paired', (from_address) => {
 	let device = require('byteballcore/device.js');
 	device.sendMessageToDevice(from_address, 'text', texts.flight());
