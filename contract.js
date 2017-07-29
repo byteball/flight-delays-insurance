@@ -84,5 +84,5 @@ exports.getContractsToRetryUnlock = (cb) => {
 };
 
 exports.setUnlockedContract = (shared_address, unit) => {
-	db.query("UPDATE contracts SET unlocked_date="+db.getNow()+", unit=? WHERE shared_address = ?", [unit, shared_address], () => {});
+	db.query("UPDATE contracts SET unlocked_date="+db.getNow()+", unlock_unit=? WHERE shared_address = ?", [unit, shared_address], () => {});
 };
