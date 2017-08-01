@@ -1,0 +1,1 @@
+*/20 * * * * cd flight-delays-insurance; node check_daemon.js 1>>~/.config/flight-delays-insurance/check_daemon.log 2>>~/.config/flight-delays-insurance/check_daemon.err
