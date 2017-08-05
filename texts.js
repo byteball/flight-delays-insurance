@@ -6,7 +6,7 @@ const moment = require('moment');
 
 
 exports.flight = () => {
-	return `Please write the flight number and date in DD.MM.YYYY format.\n\nExample: BA950 ${moment().add(2, 'days').format("DD.MM.YYYY")}`;
+	return `Please write the flight number and date in DD.MM.YYYY format.\n\nExample: BA950 ${moment().add(4, 'days').format("DD.MM.YYYY")}`;
 };
 
 exports.delay = () => {
