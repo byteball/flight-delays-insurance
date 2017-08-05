@@ -38,6 +38,7 @@ function getRatings(flight, cb) {
 					notifications.notifyAdmin("getting flightstats data for failed: " + error + ", status=" + response.statusCode);
 					return cb("Failed to fetch flightstats data.");
 				}
+				console.log(flight+' ratings response: '+body);
 				let jsonResult = JSON.parse(body);
 				if (jsonResult.error && jsonResult.error.errorMessage) {
 					notifications.notifyAdmin("error from flightstats: " + body);
@@ -50,7 +51,9 @@ function getRatings(flight, cb) {
 
 				if (objRatings.observations >= conf.minObservations)
 					db.query("INSERT OR REPLACE INTO flightstats_ratings (date, observations, ontime, late15, late30, late45, cancelled, diverted, delayMax, flight) VALUES(" + db.getNow() + ",?,?,?,?,?,?,?,?,?)",
-						[objRatings.observations, objRatings.ontime, objRatings.late15, objRatings.late30, objRatings.late45, objRatings.cancelled, objRatings.diverted, objRatings.delayMax, flight], () => {});
+						[objRatings.observations, objRatings.ontime, objRatings.late15, objRatings.late30, objRatings.late45, objRatings.cancelled, objRatings.diverted, objRatings.delayMax, flight]);
+				else
+					console.log('only '+objRatings.observations+' observations');
 
 				cb(null, objRatings);
 			});
