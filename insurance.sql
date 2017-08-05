@@ -18,6 +18,8 @@ CREATE TABLE states (
 	compensation DECIMAL(15,9),
 	price INT,
 	date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	departure_airport CHAR(3),
+	arrival_airport CHAR(3),
 	FOREIGN KEY (device_address) REFERENCES correspondent_devices(device_address)
 );
 
@@ -39,6 +41,8 @@ CREATE TABLE contracts (
 	amount INT NOT NULL,
 	winner CHAR(10),
 	unlock_unit CHAR(44),
+	departure_airport CHAR(3),
+	arrival_airport CHAR(3),
 	PRIMARY KEY(shared_address),
 	FOREIGN KEY (shared_address) REFERENCES shared_addresses(shared_address),
 	FOREIGN KEY (unlock_unit) REFERENCES units(unit),
@@ -47,3 +51,13 @@ CREATE TABLE contracts (
 
 CREATE INDEX byCheckedTimeoutDate ON contracts(checked_timeout_date);
 CREATE INDEX byCheckedFlightDate ON contracts(checked_flight_date);
+
+/*
+
+ALTER TABLE states ADD COLUMN departure_airport CHAR(3);
+ALTER TABLE states ADD COLUMN arrival_airport CHAR(3);
+ALTER TABLE contracts ADD COLUMN departure_airport CHAR(3);
+ALTER TABLE contracts ADD COLUMN arrival_airport CHAR(3);
+
+*/
+

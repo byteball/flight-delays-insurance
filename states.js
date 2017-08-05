@@ -8,8 +8,8 @@ exports.get = (device_address, cb) => {
 		state.device_address = device_address;
 
 		state.save = () => {
-			db.query("INSERT OR REPLACE INTO states (device_address, flight, delay, compensation, price, `date`) VALUES(?,?,?,?,?," + db.getNow() + ")",
-				[device_address, state.flight || null, state.delay || null, state.compensation || null, state.price || null], () => {});
+			db.query("INSERT OR REPLACE INTO states (device_address, flight, delay, compensation, price, `date`, departure_airport, arrival_airport) VALUES(?,?,?,?,?," + db.getNow() + ", ?,?)",
+				[device_address, state.flight || null, state.delay || null, state.compensation || null, state.price || null, state.departure_airport, state.arrival_airport]);
 		};
 
 		return cb(state);

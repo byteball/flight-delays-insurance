@@ -191,6 +191,8 @@ eventBus.on('text', (from_address, text) => {
 							myAmount: state.compensation - state.price,
 							asset: 'base',
 							flight: state.flight,
+							departure_airport: state.departure_airport,
+							arrival_airport: state.arrival_airport,
 							relation: '>',
 							feedValue: state.delay,
 							expiry: conf.contractExpiry, //days

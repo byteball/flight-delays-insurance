@@ -11,15 +11,15 @@ module.exports = (myAddress, event_date, contract, cb) => {
 
 	offerContract(myAddress, event_date, contract, (err, paymentRequestText, shared_address, timeout) => {
 		if (err) return cb(err);
-		insertContract(contract.feed_name, m.format('YYYY-MM-DD') + ' 23:59:59', contract.feedValue, shared_address, contract.peerAddress, contract.peerDeviceAddress, contract.peerAmount, contract.peerAsset, contract.myAmount + contract.peerAmount, timeout);
+		insertContract(contract.feed_name, m.format('YYYY-MM-DD') + ' 23:59:59', contract.feedValue, shared_address, contract.peerAddress, contract.peerDeviceAddress, contract.peerAmount, contract.peerAsset, contract.myAmount + contract.peerAmount, timeout, contract.departure_airport, contract.arrival_airport);
 		cb(err, paymentRequestText);
 	});
 };
 
 
-function insertContract(feed_name, date, delay, shared_address, peer_address, peer_device_address, peer_amount, asset, amount, timeout) {
+function insertContract(feed_name, date, delay, shared_address, peer_address, peer_device_address, peer_amount, asset, amount, timeout, departure_airport, arrival_airport) {
 	if (asset === 'base') asset = null;
-	db.query("INSERT INTO contracts (feed_name, date, delay, shared_address, peer_address, peer_device_address, peer_amount, asset, amount, timeout) \n\
-		VALUES(?,?,?,?,?,?,?,?,?,?)",
-		[feed_name, date, delay, shared_address, peer_address, peer_device_address, peer_amount, asset, amount, timeout], () => {})
+	db.query("INSERT INTO contracts (feed_name, date, delay, shared_address, peer_address, peer_device_address, peer_amount, asset, amount, timeout, departure_airport, arrival_airport) \n\
+		VALUES(?,?,?,?,?,?,?,?,?,?, ?,?)",
+		[feed_name, date, delay, shared_address, peer_address, peer_device_address, peer_amount, asset, amount, timeout, departure_airport, arrival_airport])
 }

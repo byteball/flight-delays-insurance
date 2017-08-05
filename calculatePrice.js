@@ -112,7 +112,10 @@ module.exports = (state, cb) => {
 		getRatings(flight, (err, objRatings) => {
 			if (err) return cb(err);
 
-			if (objRatings.observations < conf.minObservations) return offlineCalculate(state, cb);
+			state.departure_airport = objRatings.departureAirportFsCode;
+			state.arrival_airport = objRatings.arrivalAirportFsCode;
+			if (objRatings.observations < conf.minObservations)
+				return offlineCalculate(state, cb);
 
 			let minDelay = 0;
 			let maxDelay = 0;
