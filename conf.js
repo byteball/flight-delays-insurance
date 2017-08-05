@@ -57,6 +57,10 @@ exports.unitValue = 1000000000; //GB
 exports.minCompensation = 0.00001; //GB - 0.00001 - 10000 bytes
 exports.maxCompensation = 1; //GB
 
+exports.maxExposureToFlight = 1; //GB
+exports.maxExposureToAirline = 2; //GB
+exports.maxExposureToAirport = 3; //GB
+
 exports.minDaysBeforeFlight = 3;
 exports.maxMonthsBeforeFlight = 3;
 

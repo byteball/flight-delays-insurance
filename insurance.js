@@ -178,37 +178,71 @@ eventBus.on('text', (from_address, text) => {
 			state.delay = null;
 			state.compensation = null;
 		}
+		
+		function createContract(){
+			headlessWallet.issueOrSelectNextMainAddress((myAddress) => {
+				offerFlightDelaysContract(myAddress, moment(state.flight.split(' ')[1], "DD.MM.YYYY"), {
+					peerAddress: ucText,
+					peerDeviceAddress: from_address,
+					peerAmount: state.price,
+					myAmount: state.compensation - state.price,
+					asset: 'base',
+					flight: state.flight,
+					departure_airport: state.departure_airport,
+					arrival_airport: state.arrival_airport,
+					relation: '>',
+					feedValue: state.delay,
+					expiry: conf.contractExpiry, //days
+					timeout: conf.contractTimeout //hours
+				}, function (err, paymentRequestText) {
+					if (err) {
+						notifications.notifyAdmin('offerContract error', JSON.stringify(err));
+						return device.sendMessageToDevice(from_address, 'text', texts.errorOfferContract());
+					}
+					state.flight = null;
+					state.delay = null;
+					state.compensation = null;
+					state.save();
+					return device.sendMessageToDevice(from_address, 'text', 'This is your contract, please check and pay within 15 minutes: '+paymentRequestText);
+				});
+			});
+		}
 
 		if (validationUtils.isValidAddress(ucText) && state.price && state.compensation && state.flight && state.delay) {
 			let minDay = moment().set("hours", 0).set("minutes", 0).set("seconds", 0).set('milliseconds', 0).add(conf.minDaysBeforeFlight, 'days').valueOf();
 			if (moment(state.flight.split(' ')[1], "DD.MM.YYYY").valueOf() >= minDay) {
 				if (moment(state.flight.split(' ')[1], "DD.MM.YYYY").valueOf() <= moment().add(conf.maxMonthsBeforeFlight, 'month').valueOf()) {
-					return headlessWallet.issueOrSelectNextMainAddress((myAddress) => {
-						offerFlightDelaysContract(myAddress, moment(state.flight.split(' ')[1], "DD.MM.YYYY"), {
-							peerAddress: ucText,
-							peerDeviceAddress: from_address,
-							peerAmount: state.price,
-							myAmount: state.compensation - state.price,
-							asset: 'base',
-							flight: state.flight,
-							departure_airport: state.departure_airport,
-							arrival_airport: state.arrival_airport,
-							relation: '>',
-							feedValue: state.delay,
-							expiry: conf.contractExpiry, //days
-							timeout: conf.contractTimeout //hours
-						}, function (err, paymentRequestText) {
-							if (err) {
-								notifications.notifyAdmin('offerContract error', JSON.stringify(err));
-								return device.sendMessageToDevice(from_address, 'text', texts.errorOfferContract());
+					let arrSplitFlight = state.flight.split(' ');
+					let flight_number = arrSplitFlight[0];
+					let flight_date = arrSplitFlight[1];
+					let m = moment(flight_date, 'DD.MM.YYYY');
+					let feed_name = flight_number + '-' + m.format('YYYY-MM-DD');
+					db.query("SELECT SUM(amount) AS total_amount FROM contracts WHERE feed_name=?", [feed_name], rows => {
+						if (rows[0].total_amount + state.compensation*1e9 >= conf.maxExposureToFlight*1e9)
+							return device.sendMessageToDevice(from_address, 'text', "Can't sell any more insurance for this flight and date.");
+						let airline = flight_number.substr(0, 2);
+						db.query(
+							"SELECT SUM(amount) AS total_amount FROM contracts WHERE feed_name LIKE ? AND date>"+db.getNow()+" AND refunded=0", 
+							[airline+'%'], 
+							rows => {
+								if (rows[0].total_amount + state.compensation*1e9 >= conf.maxExposureToAirline*1e9)
+									return device.sendMessageToDevice(from_address, 'text', "Can't sell any more insurance for this airline, try again in a few days.");
+								if (!state.departure_airport || !state.arrival_airport)
+									return createContract();
+								db.query(
+									"SELECT SUM(amount) AS total_amount FROM contracts \n\
+									WHERE (departure_airport IN(?,?) || arrival_airport IN(?,?)) AND date>"+db.getNow()+" AND refunded=0", 
+									[state.departure_airport, state.arrival_airport, state.departure_airport, state.arrival_airport], 
+									rows => {
+										if (rows[0].total_amount + state.compensation*1e9 >= conf.maxExposureToAirport*1e9)
+											return device.sendMessageToDevice(from_address, 'text', "Can't sell any more insurance for flights between these airports, try again in a few days.");
+										createContract();
+									}
+								);
 							}
-							state.flight = null;
-							state.delay = null;
-							state.compensation = null;
-							state.save();
-							return device.sendMessageToDevice(from_address, 'text', 'This is your contract, please check and pay within 15 minutes: '+paymentRequestText);
-						});
+						);
 					});
+					return;
 				} else {
 					state.flight = null;
 					state.save();
