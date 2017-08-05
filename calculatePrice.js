@@ -108,6 +108,9 @@ function offlineCalculate(state, cb) {
 module.exports = (state, cb) => {
 	let flight = state.flight.split(' ')[0];
 
+	state.departure_airport = null;
+	state.arrival_airport = null;
+	
 	if (conf.analysisOfRealTimeDelays) {
 		getRatings(flight, (err, objRatings) => {
 			if (err) return cb(err);
