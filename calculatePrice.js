@@ -47,7 +47,7 @@ function getRatings(flight, cb) {
 
 				if (!Array.isArray(jsonResult.ratings)) return cb("No information about this flight.");
 
-				let objRatings = jsonResult.ratings[0];
+				let objRatings = chooseBestRating(jsonResult.ratings);
 
 				if (objRatings.observations >= conf.minObservations)
 					db.query("INSERT OR REPLACE INTO flightstats_ratings (date, observations, ontime, late15, late30, late45, cancelled, diverted, delayMax, flight) VALUES(" + db.getNow() + ",?,?,?,?,?,?,?,?,?)",
@@ -59,6 +59,24 @@ function getRatings(flight, cb) {
 			});
 		}
 	});
+}
+
+function chooseBestRating(arrRatings){
+	if (arrRatings.length === 1)
+		return arrRatings[0];
+	if (arrRatings.length === 0)
+		throw Error('no ratings');
+	var r;
+	var maxObservations = 0;
+	arrRatings.forEach(objRatings => {
+		if (objRatings.observations > maxObservations){
+			maxObservations = objRatings.observations;
+			r = objRatings;
+		}
+	});
+	if (!r)
+		throw Error('no best rating');
+	return r;
 }
 
 function offlineCalculate(state, cb) {
