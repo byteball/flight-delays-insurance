@@ -117,8 +117,6 @@ module.exports = (state, cb) => {
 
 			state.departure_airport = objRatings.departureAirportFsCode;
 			state.arrival_airport = objRatings.arrivalAirportFsCode;
-			if (objRatings.observations < conf.minObservations)
-				return offlineCalculate(state, cb);
 
 			let minDelay = 0;
 			let maxDelay = 0;
@@ -151,7 +149,14 @@ module.exports = (state, cb) => {
 			if (price.toString().match(/\./)) {
 				if (price.toString().split('.')[1].length > 9) price = price.toFixed(9);
 			}
-			return cb(null, price);
+			if (objRatings.observations < conf.minObservations)
+				offlineCalculate(state, function(err, offline_price){
+					if (err)
+						return cb(err);
+					cb(null, Math.max(price, offline_price));
+				});
+			else
+				cb(null, price);
 		});
 	} else {
 		offlineCalculate(state, cb);
