@@ -80,7 +80,7 @@ exports.setWinner = (feed_name, winner) => {
 };
 
 exports.getContractsToRetryUnlock = (cb) => {
-	db.query("SELECT * FROM contracts WHERE checked_timeout_date IS NOT NULL AND checked_flight_date IS NOT NULL AND unlocked_date IS NULL", cb)
+	db.query("SELECT * FROM contracts WHERE checked_timeout_date IS NOT NULL AND refunded = 0 AND checked_flight_date IS NOT NULL AND unlocked_date IS NULL", cb)
 };
 
 exports.setUnlockedContract = (shared_address, unit) => {
