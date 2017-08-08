@@ -53,7 +53,7 @@ exports.checkAndRefundContractsTimeout = () => {
 					getMyAddressFromContract(address, myAddress => {
 						headlessWallet.sendAllBytesFromAddress(address, myAddress, null, (err, unit) => {
 							if (err) {
-								notifications.notifyAdmin('timeout refund failed', err);
+								notifications.notifyAdmin('timeout refund '+address+' failed', err);
 								arrAddressesToRefund.splice(arrAddressesToRefund.indexOf(address), 1);
 							}else {
 								db.query("UPDATE contracts SET checked_timeout_date="+db.getNow()+", refunded = 1, unlock_unit=? WHERE shared_address=?", [unit, address]);

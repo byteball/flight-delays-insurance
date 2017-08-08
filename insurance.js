@@ -37,12 +37,12 @@ function refund(contractRow) {
 	contract.getMyAddressFromContract(contractRow.shared_address, (myAddress) => {
 		if(contractRow.asset){
 			headlessWallet.sendAssetFromAddress(contractRow.asset, contractRow.amount, contractRow.shared_address, myAddress, null, (err, unit) => {
-				if (err) return notifications.notifyAdmin('refund sendAssetFromAddress failed', err);
+				if (err) return notifications.notifyAdmin('refund sendAssetFromAddress '+contractRow.shared_address+' failed', err);
 				contract.setUnlockedContract(contractRow.shared_address, unit);
 			});
 		}else {
 			headlessWallet.sendAllBytesFromAddress(contractRow.shared_address, myAddress, null, (err, unit) => {
-				if (err) return notifications.notifyAdmin('refund sendAllBytesFromAddress failed', err);
+				if (err) return notifications.notifyAdmin('refund sendAllBytesFromAddress '+contractRow.shared_address+' failed', err);
 				contract.setUnlockedContract(contractRow.shared_address, unit);
 			});
 		}
