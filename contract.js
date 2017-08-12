@@ -35,15 +35,19 @@ exports.checkAndRefundContractsTimeout = () => {
 			let arrFullyFundedAddresses = [];
 
 			async.each(rows, (row, callback) => {
-				db.query("SELECT address, amount FROM outputs JOIN units USING(unit) \n\
-					WHERE address = ? AND amount = ? AND is_stable = 1 AND sequence = 'good'", [row.shared_address, row.peer_amount], (rows2) => {
-					if (rows2.length) {
-						arrFullyFundedAddresses.push(row.shared_address);
-					} else {
-						arrAddressesToRefund.push(row.shared_address);
+				db.query(
+					"SELECT address, amount FROM outputs JOIN units USING(unit) \n\
+					WHERE address = ? AND amount = ? AND asset IS NULL AND is_stable = 1 AND sequence = 'good'", 
+					[row.shared_address, row.peer_amount], 
+					(rows2) => {
+						if (rows2.length) {
+							arrFullyFundedAddresses.push(row.shared_address);
+						} else {
+							arrAddressesToRefund.push(row.shared_address);
+						}
+						callback();
 					}
-					callback();
-				});
+				);
 			}, () => {
 				if (arrFullyFundedAddresses.length)
 					db.query("UPDATE contracts SET checked_timeout_date="+db.getNow()+", refunded=0 WHERE shared_address IN (?)", [arrFullyFundedAddresses]);
