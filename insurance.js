@@ -275,7 +275,7 @@ eventBus.on('text', (from_address, text) => {
 				let minDay = moment().set("hours", 0).set("minutes", 0).set("seconds", 0).set('milliseconds', 0).add(conf.minDaysBeforeFlight, 'days').valueOf();
 				if (moment(flight_date, "DD.MM.YYYY").valueOf() >= minDay) {
 					if (moment(flight_date, "DD.MM.YYYY").valueOf() <= moment().add(conf.maxMonthsBeforeFlight, 'month').valueOf()) {
-						if (conf.nonInsurableAirlines.indexOf(airline) === -1 && conf.nonInsurableFlights.indexOf(flight_number === -1) {
+						if (conf.nonInsurableAirlines.indexOf(airline) === -1 && conf.nonInsurableFlights.indexOf(flight_number) === -1) {
 							state.flight = flight;
 							state.price = null;
 						} else {
