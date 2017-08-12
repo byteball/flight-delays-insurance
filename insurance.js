@@ -362,6 +362,32 @@ function checkAndRetryUnlockContracts() {
 	});
 }
 
+function sendReport(){
+	db.query("SELECT SUM(amount) AS total_free FROM my_addresses CROSS JOIN outputs USING(address) WHERE is_spent=0 AND asset IS NULL", rows => {
+		let total_free = rows[0].total_free/1e9;
+		db.query(
+			"SELECT SUM(amount) AS total_shared FROM shared_addresses CROSS JOIN outputs ON shared_address=outputs.address \n\
+			WHERE is_spent=0 AND asset IS NULL", 
+			rows => {
+				let total_shared = rows[0].total_shared/1e9;
+				let total = total_free + total_shared;
+				db.query(
+					"SELECT feed_name, delay, creation_date, peer_amount/1e9 AS premium, amount/1e9 AS coverage FROM contracts \n\
+					WHERE refunded=0 AND creation_date<"+db.addTime('-1 DAYS'),
+					rows => {
+						let arrNewContracts = rows.map(row => row.creation_date+': '+row.feed_name+', '+row.delay+' min, '+row.premium+' of '+row.coverage);
+						let body = 'Total: ' + total + 'GB\n';
+						body += 'Free: ' + total_free + 'GB\n';
+						body += 'Contracted: ' + total_shared + 'GB\n\n';
+						body += 'New contracts:\n'+arrNewContracts.join('\n');
+						notifications.notifyAdmin('Flight delays report', body);
+					}
+				);
+			}
+		);
+	});
+}
+
 eventBus.on('headless_wallet_ready', () => {
 	var error = '';
 	let arrTableNames = ['flightstats_ratings', 'states', 'contracts'];
@@ -398,5 +424,8 @@ eventBus.on('headless_wallet_ready', () => {
 
 		checkAndRetryUnlockContracts();
 		setInterval(checkAndRetryUnlockContracts, 6 * 3600 * 1000);
+
+		sendReport();
+		setInterval(sendReport, 24 * 3600 * 1000);
 	});
 });
