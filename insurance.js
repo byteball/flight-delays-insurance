@@ -262,10 +262,10 @@ eventBus.on('text', (from_address, text) => {
 			}
 		}
 
-		if (/\b[A-Z0-9]{2}\s*\d{1,4}([A-Z]?)\s\d{1,2}\.\d{2}\.\d{4}\b/.test(ucText)) {
-			let flight = ucText.match(/\b[A-Z0-9]{2}\s*\d{1,4}([A-Z]?)\s\d{1,2}\.\d{2}\.\d{4}\b/)[0];
+		if (/\b[A-Z0-9]{2}\s*\d{1,4}([A-Z]?)\s\d{1,2}\.\d{1,2}\.\d{4}\b/.test(ucText)) {
+			let flight = ucText.match(/\b[A-Z0-9]{2}\s*\d{1,4}([A-Z]?)\s\d{1,2}\.\d{1,2}\.\d{4}\b/)[0];
 			ucText = ucText.replace(flight, '').trim();
-			flight = flight.replace(flight.match(/\b[A-Z0-9]{2}(\s*)\d{1,4}([A-Z]?)\s\d{1,2}\.\d{2}\.\d{4}\b/)[1], ''); // remove space between airline and number?
+			flight = flight.replace(flight.match(/\b[A-Z0-9]{2}(\s*)\d{1,4}([A-Z]?)\s\d{1,2}\.\d{1,2}\.\d{4}\b/)[1], ''); // remove space between airline and number?
 			let flight_number = flight.split(' ')[0];
 			let flight_date = flight.split(' ')[1];
 			let arrFlightMatches = flight_number.match(/\b([A-Z0-9]{2})\s*(\d{1,4}[A-Z]?)\b/);
