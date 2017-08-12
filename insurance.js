@@ -373,12 +373,12 @@ function sendReport(){
 				let total = total_free + total_shared;
 				db.query(
 					"SELECT feed_name, delay, creation_date, peer_amount/1e9 AS premium, amount/1e9 AS coverage FROM contracts \n\
-					WHERE refunded=0 AND creation_date<"+db.addTime('-1 DAYS'),
+					WHERE refunded=0 AND creation_date > "+db.addTime('-1 DAYS')+" ORDER BY rowid",
 					rows => {
 						let arrNewContracts = rows.map(row => row.creation_date+': '+row.feed_name+', '+row.delay+' min, '+row.premium+' of '+row.coverage);
-						let body = 'Total: ' + total + 'GB\n';
-						body += 'Free: ' + total_free + 'GB\n';
-						body += 'Contracted: ' + total_shared + 'GB\n\n';
+						let body = 'Total: ' + total + ' GB\n';
+						body += 'Free: ' + total_free + ' GB\n';
+						body += 'Contracted: ' + total_shared + ' GB\n\n';
 						body += 'New contracts:\n'+arrNewContracts.join('\n');
 						notifications.notifyAdmin('Flight delays report', body);
 					}
