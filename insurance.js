@@ -265,15 +265,17 @@ eventBus.on('text', (from_address, text) => {
 		if (/\b[A-Z0-9]{2}\s*\d{1,4}([A-Z]?)\s\d{1,2}\.\d{2}\.\d{4}\b/.test(ucText)) {
 			let flight = ucText.match(/\b[A-Z0-9]{2}\s*\d{1,4}([A-Z]?)\s\d{1,2}\.\d{2}\.\d{4}\b/)[0];
 			ucText = ucText.replace(flight, '').trim();
-			flight = flight.replace(flight.match(/\b[A-Z0-9]{2}(\s*)\d{1,4}([A-Z]?)\s\d{1,2}\.\d{2}\.\d{4}\b/)[1], '');
-			let arrFlightMatches = flight.split(' ')[0].match(/\b([A-Z0-9]{2})\s*(\d{1,4}[A-Z]?)\b/);
+			flight = flight.replace(flight.match(/\b[A-Z0-9]{2}(\s*)\d{1,4}([A-Z]?)\s\d{1,2}\.\d{2}\.\d{4}\b/)[1], ''); // remove space between airline and number?
+			let flight_number = flight.split(' ')[0];
+			let flight_date = flight.split(' ')[1];
+			let arrFlightMatches = flight_number.match(/\b([A-Z0-9]{2})\s*(\d{1,4}[A-Z]?)\b/);
 
-			if (flight && moment(flight.split(' ')[1], "DD.MM.YYYY").isValid()) {
+			if (flight && moment(flight_date, "DD.MM.YYYY").isValid()) {
 				let minDay = moment().set("hours", 0).set("minutes", 0).set("seconds", 0).set('milliseconds', 0).add(conf.minDaysBeforeFlight, 'days').valueOf();
-				if (moment(flight.split(' ')[1], "DD.MM.YYYY").valueOf() >= minDay) {
-					if (moment(flight.split(' ')[1], "DD.MM.YYYY").valueOf() <= moment().add(conf.maxMonthsBeforeFlight, 'month').valueOf()) {
-						if (conf.nonInsurableAirlines.indexOf(arrFlightMatches[1]) === -1 && conf.nonInsurableFlights.indexOf(flight.split(' ')[0].toUpperCase()) === -1) {
-							state.flight = flight.toUpperCase();
+				if (moment(flight_date, "DD.MM.YYYY").valueOf() >= minDay) {
+					if (moment(flight_date, "DD.MM.YYYY").valueOf() <= moment().add(conf.maxMonthsBeforeFlight, 'month').valueOf()) {
+						if (conf.nonInsurableAirlines.indexOf(arrFlightMatches[1]) === -1 && conf.nonInsurableFlights.indexOf(flight_number === -1) {
+							state.flight = flight;
 							state.price = null;
 						} else {
 							return device.sendMessageToDevice(from_address, 'text', texts.errorNonInsurable());
