@@ -180,30 +180,37 @@ eventBus.on('text', (from_address, text) => {
 		}
 		
 		function createContract(){
-			headlessWallet.issueOrSelectNextMainAddress((myAddress) => {
-				offerFlightDelaysContract(myAddress, moment(state.flight.split(' ')[1], "DD.MM.YYYY"), {
-					peerAddress: ucText,
-					peerDeviceAddress: from_address,
-					peerAmount: state.price,
-					myAmount: state.compensation - state.price,
-					asset: 'base',
-					flight: state.flight,
-					departure_airport: state.departure_airport,
-					arrival_airport: state.arrival_airport,
-					relation: '>',
-					feedValue: state.delay,
-					expiry: conf.contractExpiry, //days
-					timeout: conf.contractTimeout //hours
-				}, function (err, paymentRequestText) {
-					if (err) {
-						notifications.notifyAdmin('offerContract error', JSON.stringify(err));
-						return device.sendMessageToDevice(from_address, 'text', texts.errorOfferContract());
-					}
-					state.flight = null;
-					state.delay = null;
-					state.compensation = null;
-					state.save();
-					return device.sendMessageToDevice(from_address, 'text', 'This is your contract, please check and pay within 15 minutes: '+paymentRequestText);
+			// calc the price again
+			calculatePrice(state, (err, price) => {
+				if (err) return device.sendMessageToDevice(from_address, 'text', err);
+				state.price = price;
+				state.save();
+				headlessWallet.issueOrSelectNextMainAddress((myAddress) => {
+					offerFlightDelaysContract(myAddress, moment(state.flight.split(' ')[1], "DD.MM.YYYY"), {
+						peerAddress: ucText,
+						peerDeviceAddress: from_address,
+						peerAmount: state.price,
+						myAmount: state.compensation - state.price,
+						asset: 'base',
+						flight: state.flight,
+						departure_airport: state.departure_airport,
+						arrival_airport: state.arrival_airport,
+						relation: '>',
+						feedValue: state.delay,
+						expiry: conf.contractExpiry, //days
+						timeout: conf.contractTimeout //hours
+					}, function (err, paymentRequestText) {
+						if (err) {
+							notifications.notifyAdmin('offerContract error', JSON.stringify(err));
+							return device.sendMessageToDevice(from_address, 'text', texts.errorOfferContract());
+						}
+						state.flight = null;
+						state.delay = null;
+						state.compensation = null;
+						state.price = null;
+						state.save();
+						return device.sendMessageToDevice(from_address, 'text', 'This is your contract, please check and pay within 15 minutes: '+paymentRequestText);
+					});
 				});
 			});
 		}
@@ -267,6 +274,7 @@ eventBus.on('text', (from_address, text) => {
 					if (moment(flight.split(' ')[1], "DD.MM.YYYY").valueOf() <= moment().add(conf.maxMonthsBeforeFlight, 'month').valueOf()) {
 						if (conf.nonInsurableAirlines.indexOf(arrFlightMatches[1]) === -1 && conf.nonInsurableFlights.indexOf(flight.split(' ')[0].toUpperCase()) === -1) {
 							state.flight = flight.toUpperCase();
+							state.price = null;
 						} else {
 							return device.sendMessageToDevice(from_address, 'text', texts.errorNonInsurable());
 						}
@@ -293,6 +301,7 @@ eventBus.on('text', (from_address, text) => {
 			}
 
 			state.delay = minutes;
+			state.price = null;
 		}
 
 		if (/\b\d+,\d+\b/.test(ucText)) ucText = ucText.replace(',', '.');
@@ -305,6 +314,7 @@ eventBus.on('text', (from_address, text) => {
 				return device.sendMessageToDevice(from_address, 'text', texts.errorMinCompensation());
 			}
 			state.compensation = compensation;
+			state.price = null;
 		}
 
 		state.save();
