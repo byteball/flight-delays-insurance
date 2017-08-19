@@ -80,11 +80,19 @@ exports.getContractsByFeedName = (feed_name, cb) => {
 };
 
 exports.setWinner = (feed_name, winner) => {
+	db.query("UPDATE contracts SET winner = ? WHERE feed_name = ? AND refunded=0", [winner, feed_name]);
+};
+
+exports.setWinnerAndCheckedFlightDate = (feed_name, winner) => {
 	db.query("UPDATE contracts SET checked_flight_date="+db.getNow()+", winner = ? WHERE feed_name = ? AND refunded=0", [winner, feed_name]);
 };
 
 exports.getContractsToRetryUnlock = (cb) => {
-	db.query("SELECT * FROM contracts WHERE checked_timeout_date IS NOT NULL AND refunded = 0 AND checked_flight_date IS NOT NULL AND unlocked_date IS NULL", cb)
+	db.query("SELECT * FROM contracts WHERE checked_timeout_date IS NOT NULL AND refunded = 0 AND winner IS NOT NULL AND unlocked_date IS NULL", cb)
+};
+
+exports.getExpiredContracts = (cb) => {
+	db.query("SELECT * FROM contracts WHERE checked_timeout_date IS NOT NULL AND refunded = 0 AND checked_flight_date IS NULL AND winner IS NULL AND unlocked_date IS NULL AND date<"+db.addTime('-'+(conf.contractExpiry + 3)+' days'), cb);
 };
 
 exports.setUnlockedContract = (shared_address, unit) => {

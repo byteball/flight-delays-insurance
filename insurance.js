@@ -84,7 +84,7 @@ function checkStatusOfContracts(rows) {
 						} else {
 							assocWaitingStableFeednamesByUnits[row.unit] = row.feed_name;
 						}
-						contract.setWinner(contractRow.feed_name, 'peer');
+						contract.setWinnerAndCheckedFlightDate(contractRow.feed_name, 'peer');
 					} else {
 						device.sendMessageToDevice(contractRow.peer_device_address, 'text', texts.arrivedOnTime());
 						if (row.is_stable) {
@@ -92,7 +92,7 @@ function checkStatusOfContracts(rows) {
 						} else {
 							assocWaitingStableFeednamesByUnits[row.unit] = row.feed_name;
 						}
-						contract.setWinner(contractRow.feed_name, 'me');
+						contract.setWinnerAndCheckedFlightDate(contractRow.feed_name, 'me');
 					}
 				});
 			}
@@ -362,6 +362,15 @@ function checkAndRetryUnlockContracts() {
 	});
 }
 
+function refundExpiredContracts(){
+	contract.getExpiredContracts(rows => {
+		rows.forEach(contractRow => {
+			contract.setWinner(contractRow.feed_name, 'me');
+			refund(contractRow);
+		});
+	});
+}
+
 function sendReport(){
 	db.query("SELECT SUM(amount) AS total_free FROM my_addresses CROSS JOIN outputs USING(address) WHERE is_spent=0 AND asset IS NULL", rows => {
 		let total_free = rows[0].total_free/1e9;
@@ -424,6 +433,9 @@ eventBus.on('headless_wallet_ready', () => {
 
 		checkAndRetryUnlockContracts();
 		setInterval(checkAndRetryUnlockContracts, 6 * 3600 * 1000);
+
+		refundExpiredContracts();
+		setInterval(refundExpiredContracts, 23 * 3600 * 1000);
 
 		sendReport();
 		setInterval(sendReport, 24 * 3600 * 1000);
