@@ -80,7 +80,7 @@ exports.getContractsByFeedName = (feed_name, cb) => {
 };
 
 exports.setWinner = (feed_name, winner) => {
-	db.query("UPDATE contracts SET checked_flight_date="+db.getNow()+", winner = ? WHERE feed_name = ?", [winner, feed_name], () => {});
+	db.query("UPDATE contracts SET checked_flight_date="+db.getNow()+", winner = ? WHERE feed_name = ? AND refunded=0", [winner, feed_name]);
 };
 
 exports.getContractsToRetryUnlock = (cb) => {
