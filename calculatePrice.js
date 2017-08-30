@@ -48,6 +48,8 @@ function getRatings(flight, cb) {
 				if (!Array.isArray(jsonResult.ratings)) return cb("No information about this flight.");
 
 				let objRatings = chooseBestRating(jsonResult.ratings);
+				objRatings.departure_airport = objRatings.departureAirportFsCode;
+				objRatings.arrival_airport = objRatings.arrivalAirportFsCode;
 
 				if (objRatings.observations >= conf.minObservations)
 					db.query("INSERT OR REPLACE INTO flightstats_ratings (flight, date, observations, ontime, late15, late30, late45, cancelled, diverted, delayMax, departure_airport, arrival_airport) VALUES(?, " + db.getNow() + ", ?, ?,?,?,?, ?,?, ?, ?,?)",
@@ -115,8 +117,8 @@ module.exports = (state, cb) => {
 		getRatings(flight, (err, objRatings) => {
 			if (err) return cb(err);
 
-			state.departure_airport = objRatings.departureAirportFsCode;
-			state.arrival_airport = objRatings.arrivalAirportFsCode;
+			state.departure_airport = objRatings.departure_airport;
+			state.arrival_airport = objRatings.departure_airport;
 
 			let minDelay = 0;
 			let maxDelay = 0;
