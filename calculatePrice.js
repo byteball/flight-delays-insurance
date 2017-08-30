@@ -28,7 +28,7 @@ function getCountDelayedFlights(objRatings, delay) {
 
 function getRatings(flight, cb) {
 	let arrFlightMatches = flight.match(/\b([A-Z0-9]{2})\s*(\d{1,4}[A-Z]?)\b/);
-	db.query("SELECT * FROM flightstats_ratings WHERE flight = ? AND date > " + db.addTime('-30 days'), [flight], (rows) => {
+	db.query("SELECT * FROM flightstats_ratings WHERE flight=? AND departure_airport IS NOT NULL AND date > " + db.addTime('-30 days'), [flight], (rows) => {
 		if (rows.length !== 0) {
 			cb(null, rows[0]);
 		} else {
@@ -50,8 +50,8 @@ function getRatings(flight, cb) {
 				let objRatings = chooseBestRating(jsonResult.ratings);
 
 				if (objRatings.observations >= conf.minObservations)
-					db.query("INSERT OR REPLACE INTO flightstats_ratings (date, observations, ontime, late15, late30, late45, cancelled, diverted, delayMax, flight) VALUES(" + db.getNow() + ",?,?,?,?,?,?,?,?,?)",
-						[objRatings.observations, objRatings.ontime, objRatings.late15, objRatings.late30, objRatings.late45, objRatings.cancelled, objRatings.diverted, objRatings.delayMax, flight]);
+					db.query("INSERT OR REPLACE INTO flightstats_ratings (flight, date, observations, ontime, late15, late30, late45, cancelled, diverted, delayMax, departure_airport, arrival_airport) VALUES(?, " + db.getNow() + ", ?, ?,?,?,?, ?,?, ?, ?,?)",
+						[flight, objRatings.observations, objRatings.ontime, objRatings.late15, objRatings.late30, objRatings.late45, objRatings.cancelled, objRatings.diverted, objRatings.delayMax, objRatings.departure_airport, objRatings.arrival_airport]);
 				else
 					console.log('only '+objRatings.observations+' observations');
 

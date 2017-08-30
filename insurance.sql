@@ -8,7 +8,9 @@ CREATE TABLE flightstats_ratings (
 	late45 INT NOT NULL,
 	cancelled INT NOT NULL,
 	diverted INT NOT NULL,
-	delayMax INT NOT NULL
+	delayMax INT NOT NULL,
+	departure_airport CHAR(3),
+	arrival_airport CHAR(3)
 );
 
 CREATE TABLE states (
@@ -58,6 +60,8 @@ ALTER TABLE states ADD COLUMN departure_airport CHAR(3);
 ALTER TABLE states ADD COLUMN arrival_airport CHAR(3);
 ALTER TABLE contracts ADD COLUMN departure_airport CHAR(3);
 ALTER TABLE contracts ADD COLUMN arrival_airport CHAR(3);
+ALTER TABLE flightstats_ratings ADD COLUMN departure_airport CHAR(3);
+ALTER TABLE flightstats_ratings ADD COLUMN arrival_airport CHAR(3);
 
 */
 
