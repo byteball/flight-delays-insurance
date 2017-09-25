@@ -118,7 +118,7 @@ module.exports = (state, cb) => {
 			if (err) return cb(err);
 
 			state.departure_airport = objRatings.departure_airport;
-			state.arrival_airport = objRatings.departure_airport;
+			state.arrival_airport = objRatings.arrival_airport;
 
 			let minDelay = 0;
 			let maxDelay = 0;
