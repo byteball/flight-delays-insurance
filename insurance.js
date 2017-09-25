@@ -334,7 +334,7 @@ eventBus.on('text', (from_address, text) => {
 			if (err) return device.sendMessageToDevice(from_address, 'text', err);
 			state.price = price;
 			state.save();
-			if (/BUY$/.test(ucText)) {
+			if (/BUY$/.test(ucText))
 				return device.sendMessageToDevice(from_address, 'text', texts.insertMyAddress());
 			// print out all details
 			device.sendMessageToDevice(from_address, 'text', texts.total(state.flight, state.delay, state.compensation, price));
