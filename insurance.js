@@ -177,6 +177,7 @@ eventBus.on('text', (from_address, text) => {
 			state.flight = null;
 			state.delay = null;
 			state.compensation = null;
+			state.price = null;
 		}
 		
 		function createContract(){
