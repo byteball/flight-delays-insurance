@@ -327,17 +327,17 @@ eventBus.on('text', (from_address, text) => {
 		if (!state.delay) return device.sendMessageToDevice(from_address, 'text', texts.delay());
 		if (!state.compensation) return device.sendMessageToDevice(from_address, 'text', texts.compensation());
 
-		if (/BUY$/.test(ucText)) {
-			return device.sendMessageToDevice(from_address, 'text', texts.insertMyAddress());
-		} else if (ucText === 'EDIT') {
+		if (ucText === 'EDIT')
 			return device.sendMessageToDevice(from_address, 'text', texts.edit());
-		}
 
 		calculatePrice(state, (err, price) => {
 			if (err) return device.sendMessageToDevice(from_address, 'text', err);
 			state.price = price;
 			state.save();
-			return device.sendMessageToDevice(from_address, 'text', texts.total(state.flight, state.delay, state.compensation, price));
+			if (/BUY$/.test(ucText)) {
+				return device.sendMessageToDevice(from_address, 'text', texts.insertMyAddress());
+			// print out all details
+			device.sendMessageToDevice(from_address, 'text', texts.total(state.flight, state.delay, state.compensation, price));
 		});
 	});
 });
