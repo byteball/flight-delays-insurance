@@ -4,6 +4,13 @@ const desktopApp = require('byteballcore/desktop_app.js');
 const conf = require('byteballcore/conf');
 const moment = require('moment');
 
+exports.invalidDate = () => {
+	return 'Invalid date entered';
+};
+
+exports.criticalWeather = () => {
+	return 'The insurance is denied due to critical weather.';
+};
 
 exports.flight = () => {
 	return `Please write the flight number and date in DD.MM.YYYY format.\n\nExample: BA950 ${moment().add(4, 'days').format("DD.MM.YYYY")}`;
