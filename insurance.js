@@ -15,96 +15,13 @@ const correspondents = require('./correspondents');
 const contract = require('./contract');
 const wallet = require('byteballcore/wallet');
 const async = require('async');
-const request = require('request');
+const {checkCriticalWeather} = require('./weather');
 
 let oracle_device_address;
 
 let assocWaitingStableFeednamesByUnits = {};
 
 headlessWallet.setupChatEventHandlers();
-
-function checkCriticalWeather(flightText, callback) {
-	if (!flightText) 
-		return callback();
-
-	const [carrier, flight, day, month, year] = flightText.match(/([a-z]+)(\d+)\s*(\d+).(\d+).(\d+)/i).splice(1,5);
-	
-	if (day > 31 || month > 12)
-		return callback(texts.invalidDate());
-	
-	request({
-		url: 'https://api.flightstats.com/flex/flightstatus/rest/v2/json/flight/status/' + carrier +
-			'/' + flight + '/arr/' + year + '/' + month + '/' + day,
-		qs: {
-			appId: conf.flightstats.appId,
-			appKey: conf.flightstats.appKey,
-			utc: false
-		},
-		json: true
-	}, (error, response, body) => {
-		if (error) 
-			throw error;
-
-		if (!body.appendix.airports) {
-			return callback();
-		}
-
-		const airports = [body.appendix.airports[0].fs, body.appendix.airports[1].fs];
-		const a = moment(`${+year}-${+month}-${+day}`).format('YYYY-MM-DD');
-			
-		request({
-			url: 'https://api.flightstats.com/flex/weather/rest/v1/json/zf/' + airports[0],
-			qs: {
-				appId: conf.flightstats.appId,
-				appKey: conf.flightstats.appKey,
-				codeType: 'fs'
-			},
-			json: true
-		}, (error, response, body) => {
-			if (error) 
-				throw error;
-
-			if (!body.zoneForecast) {
-				// action if airport weather is not received
-			} else {
-				for (const o of body.zoneForecast.dayForecasts) {
-					if (o.start.replace(/(\d+)-(\d+)-(\d+).*/, '$1-$2-$3') == a) {
-						if (conf.critical.indexOf(o.tags[0].value) != -1) {
-							return callback(texts.criticalWeather());
-						}
-					}
-				}
-			}
-			
-			request({
-				url: 'https://api.flightstats.com/flex/weather/rest/v1/json/zf/' + airports[1],
-				qs: {
-					appId: conf.flightstats.appId,
-					appKey: conf.flightstats.appKey,
-					codeType: 'fs'
-				},
-				json: true
-			}, (error, response, body) => {
-				if (error) 
-					throw error;
-					
-				if (!body.zoneForecast) {
-					// action if airport weather is not received
-				} else {
-					for (const o of body.zoneForecast.dayForecasts) {
-						if (o.start.replace(/(\d+)-(\d+)-(\d+).*/, '$1-$2-$3') == a) {
-							if (conf.critical.indexOf(o.tags[0].value) != -1) {
-								return callback(texts.criticalWeather());
-							}
-						}
-					}
-				}
-
-				callback();
-			});
-		});
-	});
-}
 
 function sendRequestsToOracle(rows) {
 	let device = require('byteballcore/device');
