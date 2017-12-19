@@ -105,3 +105,6 @@ typings/
 
 
 .idea/
+
+package-lock.json
+test.js

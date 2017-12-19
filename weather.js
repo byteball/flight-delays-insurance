@@ -1,5 +1,6 @@
 const request = require('request');
 const md5 = require('md5');
+const moment = require('moment');
 const conf = require('byteballcore/conf');
 const scCache = require('./self-cleaningCache'),
 	cache = new scCache;
@@ -16,12 +17,27 @@ exports.checkCriticalWeather = (flightText, callback) => {
 	const key = md5([carrier, flight, day, month, year].join('_'))
 
 	const weather = (airports) => {
-			const flightDate = moment(`${+year}-${+month}-${+day}`).format('YYYY-MM-DD');
+			const 
+				currentDay = moment(`${+year}-${+month}-${+day}`), 
+				lastDay = new Date(currentDay),
+				preDay = new Date(currentDay);
+
+			lastDay.setHours(lastDay.getHours()-24);
+			preDay.setHours(preDay.getHours()+24);
+
+			const flightDates = [
+				moment(lastDay).format('YYYY-MM-DD'),
+				currentDay.format('YYYY-MM-DD'),
+				moment(preDay).format('YYYY-MM-DD')
+			];
+			
 			const checkWeatherAtCurrentAirport = (airport) => {
 				return new Promise((resolve, reject) => {
 					const check = dayForecasts => {
 						for (const object of dayForecasts) {
-							if (object.start.replace(/(\d+)-(\d+)-(\d+).*/, '$1-$2-$3') == flightDate) {
+							if (object.start.replace(/(\d+)-(\d+)-(\d+).*/, '$1-$2-$3') == flightDate[0]
+								|| object.start.replace(/(\d+)-(\d+)-(\d+).*/, '$1-$2-$3') == flightDate[1]
+								|| object.start.replace(/(\d+)-(\d+)-(\d+).*/, '$1-$2-$3') == flightDate[2]) {
 								if (conf.critical.indexOf(object.tags[0].value) != -1) {
 									resolve(false);
 								}
@@ -64,7 +80,7 @@ exports.checkCriticalWeather = (flightText, callback) => {
 				});
 			};
 
-			callback()
+			callback();
 
 			checkWeatherAtCurrentAirport(airports[0])
 				.then(status => {
@@ -72,7 +88,7 @@ exports.checkCriticalWeather = (flightText, callback) => {
 						return callback(texts.criticalWeather());
 					}
 
-					return checkWeatherAtCurrentAirport(airports[0])
+					return checkWeatherAtCurrentAirport(airports[0]);
 				})
 				.then(check.then(status => {
 					if (!status) {
@@ -87,7 +103,7 @@ exports.checkCriticalWeather = (flightText, callback) => {
 				});
 	}
 
-	let airports = cache.get(`airport_${key}`)
+	let airports = cache.get(`airport_${key}`);
 
 	if (!airports) {
 		return request({
