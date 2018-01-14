@@ -2,6 +2,7 @@ const request = require('request');
 const md5 = require('md5');
 const moment = require('moment');
 const conf = require('byteballcore/conf');
+const notifications = require('./notifications');
 const scCache = require('./self-cleaningCache'),
     cache = new scCache;
 
@@ -14,7 +15,7 @@ exports.checkCriticalWeather = (flightText, callback) => {
     if (day > 31 || month > 12)
         return callback(texts.invalidDate());
 
-    const key = md5([carrier, flight, day, month, year].join('_'))
+    const key = [carrier, flight, day, month, year].join('_')
 
     const weather = (airports) => {
         const
@@ -47,36 +48,41 @@ exports.checkCriticalWeather = (flightText, callback) => {
                     }
                 };
 
-                let weather = cache.get(`weather_${airport}_${key}`);
+                cache.get(`weather_${airport}_${key}`)
+                    .then(weather => {
+                        if (!weather) {
+                            request({
+                                url: 'https://api.flightstats.com/flex/weather/rest/v1/json/zf/' + airport,
+                                qs: {
+                                    appId: conf.flightstats.appId,
+                                    appKey: conf.flightstats.appKey,
+                                    codeType: 'fs'
+                                },
+                                json: true
+                            }, (error, response, body) => {
+                                if (error)
+                                    throw error;
 
-                if (!weather) {
-                    request({
-                        url: 'https://api.flightstats.com/flex/weather/rest/v1/json/zf/' + airport,
-                        qs: {
-                            appId: conf.flightstats.appId,
-                            appKey: conf.flightstats.appKey,
-                            codeType: 'fs'
-                        },
-                        json: true
-                    }, (error, response, body) => {
-                        if (error)
-                            throw error;
+                                if (!body.zoneForecast) {
+                                    cache.set(`weather_${airport}_${key}`, 'none');
 
-                        if (!body.zoneForecast) {
-                            cache.set(`weather_${airport}_${key}`, 'none');
+                                    return callback();
+                                }
 
+                                weather = body.zoneForecast.dayForecasts;
+
+                                cache.set(`weather_${airport}_${key}`, weather);
+                                check(weather);
+                            });
+                        } else if (weather == 'none')
                             return callback();
-                        }
 
-                        weather = body.zoneForecast.dayForecasts;
-
-                        cache.set(`weather_${airport}_${key}`, weather);
                         check(weather);
+                    })
+                    .catch(err => {
+                        notifications.notifyAdmin('refund checkCriticalWeather failed', err);
+                        callback('Internal error');
                     });
-                } else if (weather == 'none')
-                    return callback();
-
-                check(weather);
             });
         };
 
@@ -103,35 +109,40 @@ exports.checkCriticalWeather = (flightText, callback) => {
             });
     }
 
-    let airports = cache.get(`airport_${key}`);
+    cache.get(`airport_${key}`)
+        .then(airports => {
+            if (!airports) {
+                return request({
+                    url: 'https://api.flightstats.com/flex/flightstatus/rest/v2/json/flight/status/' + carrier +
+                        '/' + flight + '/arr/' + year + '/' + month + '/' + day,
+                    qs: {
+                        appId: conf.flightstats.appId,
+                        appKey: conf.flightstats.appKey,
+                        utc: false
+                    },
+                    json: true
+                }, (error, response, body) => {
+                    if (error)
+                        throw error;
 
-    if (!airports) {
-        return request({
-            url: 'https://api.flightstats.com/flex/flightstatus/rest/v2/json/flight/status/' + carrier +
-                '/' + flight + '/arr/' + year + '/' + month + '/' + day,
-            qs: {
-                appId: conf.flightstats.appId,
-                appKey: conf.flightstats.appKey,
-                utc: false
-            },
-            json: true
-        }, (error, response, body) => {
-            if (error)
-                throw error;
+                    if (!body.appendix.airports) {
+                        cache.set(`airport_${key}`, 'none')
 
-            if (!body.appendix.airports) {
-                cache.set(`airport_${key}`, 'none')
+                        return callback();
+                    }
 
+                    airports = [body.appendix.airports[0].fs, body.appendix.airports[1].fs];
+                    cache.set(`airport_${key}`, airports)
+
+                    weather(airports);
+                });
+            } else if (airports == 'none')
                 return callback();
-            }
-
-            airports = [body.appendix.airports[0].fs, body.appendix.airports[1].fs];
-            cache.set(`airport_${key}`, airports)
 
             weather(airports);
+        })
+        .catch(err => {
+            notifications.notifyAdmin('refund checkCriticalWeather failed', err);
+            callback('Internal error');
         });
-    } else if (airports == 'none')
-        return callback();
-
-    weather(airports);
 }
