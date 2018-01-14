@@ -19,7 +19,7 @@ module.exports = class {
     get(key) {
         return new Promise((resolve, reject) => {
             db.query('SELECT `value` FROM weather_cache WHERE key=?', [key], (rows) => {
-                resolve(rows.length ? JSON.parse(rows) : null)
+                resolve(rows.length ? JSON.parse(rows[0].value) : null)
             });
         });
     }
