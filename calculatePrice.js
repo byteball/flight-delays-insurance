@@ -35,7 +35,7 @@ function getRatings(flight, cb) {
 			request('https://api.flightstats.com/flex/ratings/rest/v1/json/flight/' + arrFlightMatches[1] + '/' + arrFlightMatches[2] +
 				'?appId=' + conf.flightstats.appId + '&appKey=' + conf.flightstats.appKey, (error, response, body) => {
 				if (error || response.statusCode !== 200) {
-					notifications.notifyAdmin("getting flightstats data for failed: " + error + ", status=" + response.statusCode);
+					notifications.notifyAdmin("getting flightstats data for failed: " + error + ", status=" + (response ? response.statusCode : 'none'));
 					return cb("Failed to fetch flightstats data.");
 				}
 				console.log(flight+' ratings response: '+body);
