@@ -13,7 +13,6 @@
     "byteballcore": "git+https://github.com/byteball/byteballcore.git",
     "emailjs": "^1.0.10",
     "headless-byteball": "git+https://github.com/byteball/headless-byteball.git",
-    "md5": "2.2.1",
     "moment": "^2.18.1",
     "request": "^2.81.0"
   }

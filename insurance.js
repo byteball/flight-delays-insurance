@@ -128,7 +128,8 @@ eventBus.on('new_my_transactions', (arrUnits) => {
     db.query(
         "SELECT outputs.amount, peer_amount, outputs.asset AS received_asset, contracts.asset AS expected_asset, peer_device_address \n\
 		FROM outputs JOIN contracts ON address=shared_address \n\
-		WHERE unit IN(?) AND NOT EXISTS (SELECT 1 FROM unit_authors CROSS JOIN my_addresses USING(address) WHERE unit_authors.unit=outputs.unit)", [arrUnits],
+		WHERE unit IN(?) AND NOT EXISTS (SELECT 1 FROM unit_authors CROSS JOIN my_addresses USING(address) WHERE unit_authors.unit=outputs.unit)", 
+        [arrUnits],
         function(rows) {
             rows.forEach(row => {
                 if (row.received_asset !== row.expected_asset)
@@ -229,7 +230,8 @@ eventBus.on('text', (from_address, text) => {
                             return device.sendMessageToDevice(from_address, 'text', "Can't sell any more insurance for this flight and date.");
                         let airline = flight_number.substr(0, 2);
                         db.query(
-                            "SELECT SUM(amount) AS total_amount FROM contracts WHERE feed_name LIKE ? AND date>" + db.getNow() + " AND refunded=0", [airline + '%'],
+                            "SELECT SUM(amount) AS total_amount FROM contracts WHERE feed_name LIKE ? AND date>" + db.getNow() + " AND refunded=0", 
+                            [airline + '%'],
                             rows => {
                                 if (rows[0].total_amount + state.compensation * 1e9 >= conf.maxExposureToAirline * 1e9)
                                     return device.sendMessageToDevice(from_address, 'text', "Can't sell any more insurance for this airline, try again in a few days.");
@@ -237,7 +239,8 @@ eventBus.on('text', (from_address, text) => {
                                     return createContract();
                                 db.query(
                                     "SELECT SUM(amount) AS total_amount FROM contracts \n\
-                                    WHERE (departure_airport IN(?,?) || arrival_airport IN(?,?)) AND date>" + db.getNow() + " AND refunded=0", [state.departure_airport, state.arrival_airport, state.departure_airport, state.arrival_airport],
+                                    WHERE (departure_airport IN(?,?) || arrival_airport IN(?,?)) AND date>" + db.getNow() + " AND refunded=0", 
+                                    [state.departure_airport, state.arrival_airport, state.departure_airport, state.arrival_airport],
                                     rows => {
                                         if (rows[0].total_amount + state.compensation * 1e9 >= conf.maxExposureToAirport * 1e9)
                                             return device.sendMessageToDevice(from_address, 'text', "Can't sell any more insurance for flights between these airports, try again in a few days.");

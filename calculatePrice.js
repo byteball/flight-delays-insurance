@@ -53,7 +53,8 @@ function getRatings(flight, cb) {
                     objRatings.arrival_airport = objRatings.arrivalAirportFsCode;
 
                     if (objRatings.observations >= conf.minObservations)
-                        db.query("INSERT OR REPLACE INTO flightstats_ratings (flight, date, observations, ontime, late15, late30, late45, cancelled, diverted, delayMax, departure_airport, arrival_airport) VALUES(?, " + db.getNow() + ", ?, ?,?,?,?, ?,?, ?, ?,?)", [flight, objRatings.observations, objRatings.ontime, objRatings.late15, objRatings.late30, objRatings.late45, objRatings.cancelled, objRatings.diverted, objRatings.delayMax, objRatings.departure_airport, objRatings.arrival_airport]);
+                        db.query("INSERT OR REPLACE INTO flightstats_ratings (flight, date, observations, ontime, late15, late30, late45, cancelled, diverted, delayMax, departure_airport, arrival_airport) VALUES(?, " + db.getNow() + ", ?, ?,?,?,?, ?,?, ?, ?,?)", 
+                            [flight, objRatings.observations, objRatings.ontime, objRatings.late15, objRatings.late30, objRatings.late45, objRatings.cancelled, objRatings.diverted, objRatings.delayMax, objRatings.departure_airport, objRatings.arrival_airport]);
                     else
                         console.log('only ' + objRatings.observations + ' observations');
 

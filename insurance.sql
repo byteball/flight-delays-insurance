@@ -55,8 +55,9 @@ CREATE INDEX byCheckedTimeoutDate ON contracts(checked_timeout_date);
 CREATE INDEX byCheckedFlightDate ON contracts(checked_flight_date);
 
 CREATE TABLE `weather_cache` (
-	`key`	TEXT NOT NULL UNIQUE,
-	`value`	TEXT
+	`airport`	TEXT NOT NULL UNIQUE,
+	`weather`	TEXT,
+	`ts`	INTEGER NOT NULL
 );
 
 /*
