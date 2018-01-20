@@ -35,36 +35,36 @@ function getRatings(flight, cb) {
 		} else {
 			request('https://api.flightstats.com/flex/ratings/rest/v1/json/flight/' + arrFlightMatches[1] + '/' + arrFlightMatches[2] +
 				'?appId=' + conf.flightstats.appId + '&appKey=' + conf.flightstats.appKey, (error, response, body) => {
-					if (error || response.statusCode !== 200) {
-						notifications.notifyAdmin("getting flightstats data for failed: " + error + ", status=" + response.statusCode);
-						return cb("Failed to fetch flightstats data.");
-					}
-					console.log(flight + ' ratings response: ' + body);
-					let jsonResult = JSON.parse(body);
-					if (jsonResult.error && jsonResult.error.errorMessage) {
-						notifications.notifyAdmin("error from flightstats: " + body);
-						return cb("Error from flightstats: " + jsonResult.error.errorMessage);
-					}
+				if (error || response.statusCode !== 200) {
+					notifications.notifyAdmin("getting flightstats data for failed: " + error + ", status=" + response.statusCode);
+					return cb("Failed to fetch flightstats data.");
+				}
+				console.log(flight + ' ratings response: ' + body);
+				let jsonResult = JSON.parse(body);
+				if (jsonResult.error && jsonResult.error.errorMessage) {
+					notifications.notifyAdmin("error from flightstats: " + body);
+					return cb("Error from flightstats: " + jsonResult.error.errorMessage);
+				}
 
-					if (!Array.isArray(jsonResult.ratings)) return cb("No information about this flight.");
+				if (!Array.isArray(jsonResult.ratings)) return cb("No information about this flight.");
 
-					let objRatings = chooseBestRating(jsonResult.ratings);
-					objRatings.departure_airport = objRatings.departureAirportFsCode;
-					objRatings.arrival_airport = objRatings.arrivalAirportFsCode;
+				let objRatings = chooseBestRating(jsonResult.ratings);
+				objRatings.departure_airport = objRatings.departureAirportFsCode;
+				objRatings.arrival_airport = objRatings.arrivalAirportFsCode;
 
-					if (objRatings.observations >= conf.minObservations)
-						db.query("INSERT OR REPLACE INTO flightstats_ratings (flight, date, observations, ontime, late15, late30, late45, cancelled, diverted, delayMax, departure_airport, arrival_airport) VALUES(?, " + db.getNow() + ", ?, ?,?,?,?, ?,?, ?, ?,?)", 
-							[flight, objRatings.observations, objRatings.ontime, objRatings.late15, objRatings.late30, objRatings.late45, objRatings.cancelled, objRatings.diverted, objRatings.delayMax, objRatings.departure_airport, objRatings.arrival_airport]);
-					else
-						console.log('only ' + objRatings.observations + ' observations');
+				if (objRatings.observations >= conf.minObservations)
+					db.query("INSERT OR REPLACE INTO flightstats_ratings (flight, date, observations, ontime, late15, late30, late45, cancelled, diverted, delayMax, departure_airport, arrival_airport) VALUES(?, " + db.getNow() + ", ?, ?,?,?,?, ?,?, ?, ?,?)", 
+						[flight, objRatings.observations, objRatings.ontime, objRatings.late15, objRatings.late30, objRatings.late45, objRatings.cancelled, objRatings.diverted, objRatings.delayMax, objRatings.departure_airport, objRatings.arrival_airport]);
+				else
+					console.log('only ' + objRatings.observations + ' observations');
 
-					cb(null, objRatings);
-				});
+				cb(null, objRatings);
+			});
 		}
 	});
 }
 
-function chooseBestRating(arrRatings) {
+function chooseBestRating(arrRatings){
 	if (arrRatings.length === 1)
 		return arrRatings[0];
 	if (arrRatings.length === 0)
@@ -113,7 +113,7 @@ module.exports = (state, cb) => {
 
 	state.departure_airport = null;
 	state.arrival_airport = null;
-
+	
 	if (conf.analysisOfRealTimeDelays) {
 		checkCriticalWeather(state.flight, (criticality) => {
 			if (criticality) {
