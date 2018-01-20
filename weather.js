@@ -3,114 +3,114 @@ const moment = require('moment');
 const conf = require('byteballcore/conf');
 const notifications = require('./notifications');
 const Cache = require('./cache'),
-    cache = new Cache('weather', 'airport', 'weather');
+	cache = new Cache('weather', 'airport', 'weather');
 
 exports.checkCriticalWeather = (state, callback) => {
-    const flightText = state.flight;
+	const flightText = state.flight;
 
-    let arrFlightMatches = flightText.split(' ')[0].match(/\b([A-Z0-9]{2})\s*(\d{1,4}[A-Z]?)\b/);
+	let arrFlightMatches = flightText.split(' ')[0].match(/\b([A-Z0-9]{2})\s*(\d{1,4}[A-Z]?)\b/);
 
-    if (!flightText)
-        return callback();
+	if (!flightText)
+		return callback();
 
-    const [carrier, flight, day, month, year] = flightText.match(/([a-z]+)(\d+)\s*(\d+).(\d+).(\d+)/i).splice(1, 5);
+	const [carrier, flight, day, month, year] = flightText.match(/([a-z]+)(\d+)\s*(\d+).(\d+).(\d+)/i).splice(1, 5);
 
-    if (day > 31 || month > 12)
-        return callback(texts.invalidDate());
+	if (day > 31 || month > 12)
+		return callback(texts.invalidDate());
 
-    const key = [day, month, year].join('_')
+	const key = [day, month, year].join('_')
 
-    const weather = (airports) => {
-        const
-            flightDate = moment(`${+year}-${+month}-${+day}`),
-            previousDay = new Date(flightDate),
-            nextDay = new Date(flightDate);
+	const weather = (airports) => {
+		const
+			flightDate = moment(`${+year}-${+month}-${+day}`),
+			previousDay = new Date(flightDate),
+			nextDay = new Date(flightDate);
 
-        previousDay.setHours(previousDay.getHours() - 24);
-        nextDay.setHours(nextDay.getHours() + 24);
+		previousDay.setHours(previousDay.getHours() - 24);
+		nextDay.setHours(nextDay.getHours() + 24);
 
-        const checkedDates = [
-            moment(previousDay).format('YYYY-MM-DD'),
-            flightDate.format('YYYY-MM-DD'),
-            moment(nextDay).format('YYYY-MM-DD')
-        ];
+		const checkedDates = [
+			moment(previousDay).format('YYYY-MM-DD'),
+			flightDate.format('YYYY-MM-DD'),
+			moment(nextDay).format('YYYY-MM-DD')
+		];
 
-        const checkWeatherAtAirport = (airport) => {
-            return new Promise((resolve, reject) => {
-                const check = dayForecasts => {
-                    for (const object of dayForecasts) {
-                        if (object.start.replace(/(\d+)-(\d+)-(\d+).*/, '$1-$2-$3') == checkedDates[0] ||
-                            object.start.replace(/(\d+)-(\d+)-(\d+).*/, '$1-$2-$3') == checkedDates[1] ||
-                            object.start.replace(/(\d+)-(\d+)-(\d+).*/, '$1-$2-$3') == checkedDates[2]) {
-                            if (conf.critical.indexOf(object.tags[0].value) != -1) {
-                                resolve(false);
-                            }
-                        }
+		const checkWeatherAtAirport = (airport) => {
+			return new Promise((resolve, reject) => {
+				const check = dayForecasts => {
+					for (const object of dayForecasts) {
+						if (object.start.replace(/(\d+)-(\d+)-(\d+).*/, '$1-$2-$3') == checkedDates[0] ||
+							object.start.replace(/(\d+)-(\d+)-(\d+).*/, '$1-$2-$3') == checkedDates[1] ||
+							object.start.replace(/(\d+)-(\d+)-(\d+).*/, '$1-$2-$3') == checkedDates[2]) {
+							if (conf.critical.indexOf(object.tags[0].value) != -1) {
+								resolve(false);
+							}
+						}
 
-                        resolve(true);
-                    }
-                };
+						resolve(true);
+					}
+				};
 
-                cache.get(`weather_${airport}_${key}`)
-                    .then(weather => {
-                        if (!weather) {
-                            request({
-                                url: 'https://api.flightstats.com/flex/weather/rest/v1/json/zf/' + airport,
-                                qs: {
-                                    appId: conf.flightstats.appId,
-                                    appKey: conf.flightstats.appKey,
-                                    codeType: 'fs'
-                                },
-                                json: true
-                            }, (error, response, body) => {
-                                if (error)
-                                    throw error;
+				cache.get(`weather_${airport}_${key}`)
+					.then(weather => {
+						if (!weather) {
+							request({
+								url: 'https://api.flightstats.com/flex/weather/rest/v1/json/zf/' + airport,
+								qs: {
+									appId: conf.flightstats.appId,
+									appKey: conf.flightstats.appKey,
+									codeType: 'fs'
+								},
+								json: true
+							}, (error, response, body) => {
+								if (error)
+									throw error;
 
-                                if (!body.zoneForecast) {
-                                    cache.set(`weather_${airport}_${key}`, 'none');
+								if (!body.zoneForecast) {
+									cache.set(`weather_${airport}_${key}`, 'none');
 
-                                    return callback();
-                                }
+									return callback();
+								}
 
-                                weather = body.zoneForecast.dayForecasts;
+								weather = body.zoneForecast.dayForecasts;
 
-                                cache.set(`weather_${airport}_${key}`, weather);
-                                check(weather);
-                            });
-                        } else if (weather == 'none')
-                            return callback();
+								cache.set(`weather_${airport}_${key}`, weather);
+								check(weather);
+							});
+						} else if (weather == 'none')
+							return callback();
 
-                        check(weather);
-                    })
-                    .catch(err => {
-                        notifications.notifyAdmin('refund checkCriticalWeather failed', err);
-                        callback('Internal error');
-                    });
-            });
-        };
+						check(weather);
+					})
+					.catch(err => {
+						notifications.notifyAdmin('refund checkCriticalWeather failed', err);
+						callback('Internal error');
+					});
+			});
+		};
 
-        callback();
+		callback();
 
-        checkWeatherAtAirport(airports[0])
-            .then(status => {
-                if (!status) {
-                    return callback(texts.criticalWeather());
-                }
+		checkWeatherAtAirport(airports[0])
+			.then(status => {
+				if (!status) {
+					return callback(texts.criticalWeather());
+				}
 
-                return checkWeatherAtAirport(airports[1]);
-            })
-            .then(check.then(status => {
-                if (!status) {
-                    return callback(texts.criticalWeather());
-                }
+				return checkWeatherAtAirport(airports[1]);
+			})
+			.then(check.then(status => {
+				if (!status) {
+					return callback(texts.criticalWeather());
+				}
 
-                callback();
-            }).catch(error => {
-                throw error;
-            })).catch(error => {
-                throw error;
-            });
-    }
+				callback();
+			}).catch(error => {
+				throw error;
+			})).catch(error => {
+				throw error;
+			});
+	}
 
-    weather(arrFlightMatches);
+	weather(arrFlightMatches);
 }
