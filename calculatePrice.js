@@ -165,7 +165,7 @@ module.exports = (state, cb) => {
 				if (price.toString().split('.')[1].length > 9) price = price.toFixed(9);
 			}
 			if (objRatings.observations < conf.minObservations)
-				offlineCalculate(state, function(err, offline_price) {
+				offlineCalculate(state, function(err, offline_price){
 					if (err)
 						return cb(err);
 					cb(null, Math.max(price, offline_price));
