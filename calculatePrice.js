@@ -115,8 +115,8 @@ module.exports = (state, cb) => {
 	state.arrival_airport = null;
 	
 	if (conf.analysisOfRealTimeDelays) {
-		checkCriticalWeather(state.flight, (criticality) => {
-			if (criticality) {
+		checkCriticalWeather(state.flight, (is_critical) => {
+			if (is_critical) {
 				state.flight = null;
 				state.delay = null;
 				state.compensation = null;

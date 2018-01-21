@@ -8,11 +8,6 @@ const Cache = require('./cache'),
 exports.checkCriticalWeather = (state, callback) => {
 	const flightText = state.flight;
 
-	let arrFlightMatches = flightText.split(' ')[0].match(/\b([A-Z0-9]{2})\s*(\d{1,4}[A-Z]?)\b/);
-
-	if (!flightText)
-		return callback();
-
 	const [carrier, flight, day, month, year] = flightText.match(/([a-z]+)(\d+)\s*(\d+).(\d+).(\d+)/i).splice(1, 5);
 
 	if (day > 31 || month > 12)
@@ -20,7 +15,7 @@ exports.checkCriticalWeather = (state, callback) => {
 
 	const key = [day, month, year].join('_')
 
-	const weather = (airports) => {
+	const weather = (arrFlightMatches) => {
 		const
 			flightDate = moment(`${+year}-${+month}-${+day}`),
 			previousDay = new Date(flightDate),
@@ -51,7 +46,7 @@ exports.checkCriticalWeather = (state, callback) => {
 					}
 				};
 
-				cache.get(`weather_${airport}_${key}`)
+				cache.get(`${airport}_${key}`)
 					.then(weather => {
 						if (!weather) {
 							request({
@@ -67,14 +62,14 @@ exports.checkCriticalWeather = (state, callback) => {
 									throw error;
 
 								if (!body.zoneForecast) {
-									cache.set(`weather_${airport}_${key}`, 'none');
+									cache.set(`${airport}_${key}`, 'none');
 
 									return callback();
 								}
 
 								weather = body.zoneForecast.dayForecasts;
 
-								cache.set(`weather_${airport}_${key}`, weather);
+								cache.set(`${airport}_${key}`, weather);
 								check(weather);
 							});
 						} else if (weather == 'none')
@@ -91,13 +86,13 @@ exports.checkCriticalWeather = (state, callback) => {
 
 		callback();
 
-		checkWeatherAtAirport(airports[0])
+		checkWeatherAtAirport(arrFlightMatches[1])
 			.then(status => {
 				if (!status) {
 					return callback(texts.criticalWeather());
 				}
 
-				return checkWeatherAtAirport(airports[1]);
+				return checkWeatherAtAirport(arrFlightMatches[2]);
 			})
 			.then(check.then(status => {
 				if (!status) {
@@ -112,5 +107,5 @@ exports.checkCriticalWeather = (state, callback) => {
 			});
 	}
 
-	weather(arrFlightMatches);
+	weather(flightText.split(' ')[0].match(/\b([A-Z0-9]{2})\s*(\d{1,4}[A-Z]?)\b/));
 }
