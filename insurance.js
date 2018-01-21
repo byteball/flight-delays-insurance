@@ -35,14 +35,14 @@ function sendRequestsToOracle(rows) {
 
 function refund(contractRow) {
 	contract.getMyAddressFromContract(contractRow.shared_address, (myAddress) => {
-		if (contractRow.asset) {
+		if(contractRow.asset){
 			headlessWallet.sendAssetFromAddress(contractRow.asset, contractRow.amount, contractRow.shared_address, myAddress, null, (err, unit) => {
-				if (err) return notifications.notifyAdmin('refund sendAssetFromAddress ' + contractRow.shared_address + ' failed', err);
+				if (err) return notifications.notifyAdmin('refund sendAssetFromAddress '+contractRow.shared_address+' failed', err);
 				contract.setUnlockedContract(contractRow.shared_address, unit);
 			});
-		} else {
+		}else {
 			headlessWallet.sendAllBytesFromAddress(contractRow.shared_address, myAddress, null, (err, unit) => {
-				if (err) return notifications.notifyAdmin('refund sendAllBytesFromAddress ' + contractRow.shared_address + ' failed', err);
+				if (err) return notifications.notifyAdmin('refund sendAllBytesFromAddress '+contractRow.shared_address+' failed', err);
 				contract.setUnlockedContract(contractRow.shared_address, unit);
 			});
 		}
@@ -129,13 +129,13 @@ eventBus.on('new_my_transactions', (arrUnits) => {
 		"SELECT outputs.amount, peer_amount, outputs.asset AS received_asset, contracts.asset AS expected_asset, peer_device_address \n\
 		FROM outputs JOIN contracts ON address=shared_address \n\
 		WHERE unit IN(?) AND NOT EXISTS (SELECT 1 FROM unit_authors CROSS JOIN my_addresses USING(address) WHERE unit_authors.unit=outputs.unit)", 
-		[arrUnits],
-		function(rows) {
+		[arrUnits], 
+		function(rows){
 			rows.forEach(row => {
 				if (row.received_asset !== row.expected_asset)
 					return device.sendMessageToDevice(row.peer_device_address, 'text', "Received payment in wrong asset");
 				if (row.amount !== row.peer_amount)
-					return device.sendMessageToDevice(row.peer_device_address, 'text', "Received wrong amount: expected " + row.peer_amount + ", received " + row.amount);
+					return device.sendMessageToDevice(row.peer_device_address, 'text', "Received wrong amount: expected "+row.peer_amount+", received "+row.amount);
 				device.sendMessageToDevice(row.peer_device_address, 'text', "Received your payment.  Your insurance contract is now fully paid, we'll check the status of your flight and let you know.");
 			});
 		}
@@ -179,8 +179,8 @@ eventBus.on('text', (from_address, text) => {
 			state.compensation = null;
 			state.price = null;
 		}
-
-		function createContract() {
+		
+		function createContract(){
 			// calc the price again
 			calculatePrice(state, (err, price) => {
 				if (err) return device.sendMessageToDevice(from_address, 'text', err);
@@ -200,7 +200,7 @@ eventBus.on('text', (from_address, text) => {
 						feedValue: state.delay,
 						expiry: conf.contractExpiry, //days
 						timeout: conf.contractTimeout //hours
-					}, function(err, paymentRequestText) {
+					}, function (err, paymentRequestText) {
 						if (err) {
 							notifications.notifyAdmin('offerContract error', JSON.stringify(err));
 							return device.sendMessageToDevice(from_address, 'text', texts.errorOfferContract());
@@ -210,7 +210,7 @@ eventBus.on('text', (from_address, text) => {
 						state.compensation = null;
 						state.price = null;
 						state.save();
-						return device.sendMessageToDevice(from_address, 'text', 'This is your contract, please check and pay within 15 minutes: ' + paymentRequestText);
+						return device.sendMessageToDevice(from_address, 'text', 'This is your contract, please check and pay within 15 minutes: '+paymentRequestText);
 					});
 				});
 			});
@@ -226,23 +226,23 @@ eventBus.on('text', (from_address, text) => {
 					let m = moment(flight_date, 'DD.MM.YYYY');
 					let feed_name = flight_number + '-' + m.format('YYYY-MM-DD');
 					db.query("SELECT SUM(amount) AS total_amount FROM contracts WHERE feed_name=?", [feed_name], rows => {
-						if (rows[0].total_amount + state.compensation * 1e9 >= conf.maxExposureToFlight * 1e9)
+						if (rows[0].total_amount + state.compensation*1e9 >= conf.maxExposureToFlight*1e9)
 							return device.sendMessageToDevice(from_address, 'text', "Can't sell any more insurance for this flight and date.");
 						let airline = flight_number.substr(0, 2);
 						db.query(
-							"SELECT SUM(amount) AS total_amount FROM contracts WHERE feed_name LIKE ? AND date>" + db.getNow() + " AND refunded=0", 
-							[airline + '%'],
+							"SELECT SUM(amount) AS total_amount FROM contracts WHERE feed_name LIKE ? AND date>"+db.getNow()+" AND refunded=0", 
+							[airline+'%'], 
 							rows => {
-								if (rows[0].total_amount + state.compensation * 1e9 >= conf.maxExposureToAirline * 1e9)
+								if (rows[0].total_amount + state.compensation*1e9 >= conf.maxExposureToAirline*1e9)
 									return device.sendMessageToDevice(from_address, 'text', "Can't sell any more insurance for this airline, try again in a few days.");
 								if (!state.departure_airport || !state.arrival_airport)
 									return createContract();
 								db.query(
 									"SELECT SUM(amount) AS total_amount FROM contracts \n\
-									WHERE (departure_airport IN(?,?) || arrival_airport IN(?,?)) AND date>" + db.getNow() + " AND refunded=0", 
-									[state.departure_airport, state.arrival_airport, state.departure_airport, state.arrival_airport],
+									WHERE (departure_airport IN(?,?) || arrival_airport IN(?,?)) AND date>"+db.getNow()+" AND refunded=0", 
+									[state.departure_airport, state.arrival_airport, state.departure_airport, state.arrival_airport], 
 									rows => {
-										if (rows[0].total_amount + state.compensation * 1e9 >= conf.maxExposureToAirport * 1e9)
+										if (rows[0].total_amount + state.compensation*1e9 >= conf.maxExposureToAirport*1e9)
 											return device.sendMessageToDevice(from_address, 'text', "Can't sell any more insurance for flights between these airports, try again in a few days.");
 										createContract();
 									}
@@ -363,7 +363,7 @@ function checkAndRetryUnlockContracts() {
 	});
 }
 
-function refundExpiredContracts() {
+function refundExpiredContracts(){
 	contract.getExpiredContracts(rows => {
 		rows.forEach(contractRow => {
 			contract.setWinner(contractRow.feed_name, 'me');
@@ -372,24 +372,24 @@ function refundExpiredContracts() {
 	});
 }
 
-function sendReport() {
+function sendReport(){
 	db.query("SELECT SUM(amount) AS total_free FROM my_addresses CROSS JOIN outputs USING(address) WHERE is_spent=0 AND asset IS NULL", rows => {
-		let total_free = rows[0].total_free / 1e9;
+		let total_free = rows[0].total_free/1e9;
 		db.query(
 			"SELECT SUM(amount) AS total_shared FROM shared_addresses CROSS JOIN outputs ON shared_address=outputs.address \n\
-			WHERE is_spent=0 AND asset IS NULL",
+			WHERE is_spent=0 AND asset IS NULL", 
 			rows => {
-				let total_shared = rows[0].total_shared / 1e9;
+				let total_shared = rows[0].total_shared/1e9;
 				let total = total_free + total_shared;
 				db.query(
 					"SELECT feed_name, delay, creation_date, peer_amount/1e9 AS premium, amount/1e9 AS coverage FROM contracts \n\
-					WHERE refunded=0 AND creation_date > " + db.addTime('-1 DAYS') + " ORDER BY rowid",
+					WHERE refunded=0 AND creation_date > "+db.addTime('-1 DAYS')+" ORDER BY rowid",
 					rows => {
-						let arrNewContracts = rows.map(row => row.creation_date + ': ' + row.feed_name + ', ' + row.delay + ' min, ' + row.premium + ' of ' + row.coverage);
+						let arrNewContracts = rows.map(row => row.creation_date+': '+row.feed_name+', '+row.delay+' min, '+row.premium+' of '+row.coverage);
 						let body = 'Total: ' + total + ' GB\n';
 						body += 'Free: ' + total_free + ' GB\n';
 						body += 'Contracted: ' + total_shared + ' GB\n\n';
-						body += 'New contracts:\n' + arrNewContracts.join('\n');
+						body += 'New contracts:\n'+arrNewContracts.join('\n');
 						notifications.notifyAdmin('Flight delays report', body);
 					}
 				);
