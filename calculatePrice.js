@@ -58,19 +58,7 @@ function getRatings(flight, cb) {
 				else
 					console.log('only '+objRatings.observations+' observations');
 
-				checkCriticalWeather(state, [objRatings.departure_airport, objRatings.arrival_airport], (is_critical) => {
-					if (is_critical) {
-						state.flight = null;
-						state.delay = null;
-						state.compensation = null;
-						state.price = null;
-						state.save();
-
-						return cb('The insurance is refused due to critical weather.')
-					}
-
-					cb(null, objRatings);
-				});
+				cb(null, objRatings);
 			});
 		}
 	});
@@ -129,6 +117,24 @@ module.exports = (state, cb) => {
 	if (conf.analysisOfRealTimeDelays) {
 		getRatings(flight, (err, objRatings) => {
 			if (err) return cb(err);
+
+			let flight = state.flight.match(/\b[A-Z0-9]{2}\s*\d{1,4}([A-Z]?)\s\d{1,2}\.\d{1,2}\.\d{4}\b/)[0];
+			flight = flight.replace(flight.match(/\b[A-Z0-9]{2}(\s*)\d{1,4}([A-Z]?)\s\d{1,2}\.\d{1,2}\.\d{4}\b/)[1], '');
+			let flight_date = flight.split(' ')[1];
+			
+			checkCriticalWeather(flight_date, [objRatings.departure_airport, objRatings.arrival_airport], (is_critical) => {
+				if (is_critical) {
+					state.flight = null;
+					state.delay = null;
+					state.compensation = null;
+					state.price = null;
+					state.save();
+
+					return cb('The insurance is refused due to critical weather.')
+				}
+
+				
+			});
 
 			state.departure_airport = objRatings.departure_airport;
 			state.arrival_airport = objRatings.arrival_airport;

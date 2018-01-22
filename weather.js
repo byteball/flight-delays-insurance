@@ -5,13 +5,7 @@ const notifications = require('./notifications');
 const Cache = require('./cache'),
 	cache = new Cache('weather', 'airport', 'weather');
 
-exports.checkCriticalWeather = (state, airports, callback) => {
-	const flightText = state.flight;
-
-	let flight = flightText.match(/\b[A-Z0-9]{2}\s*\d{1,4}([A-Z]?)\s\d{1,2}\.\d{1,2}\.\d{4}\b/)[0];
-	flight = flight.replace(flight.match(/\b[A-Z0-9]{2}(\s*)\d{1,4}([A-Z]?)\s\d{1,2}\.\d{1,2}\.\d{4}\b/)[1], '');
-	let flight_date = flight.split(' ')[1];
-	
+exports.checkCriticalWeather = (flight_date, airports, callback) => {
 	const [day, month, year] = flight_date.split('.')
 
 	if (day > 31 || month > 12)
@@ -19,7 +13,7 @@ exports.checkCriticalWeather = (state, airports, callback) => {
 
 	const key = [day, month, year].join('_')
 
-	const getWeather = (airport) => {
+	const getWeather = (airports) => {
 		const
 			flightDate = moment(`${+year}-${+month}-${+day}`),
 			previousDay = new Date(flightDate),
@@ -111,5 +105,5 @@ exports.checkCriticalWeather = (state, airports, callback) => {
 			});
 	}
 
-	getWeather(flightText.split(' ')[0].match(/\b([A-Z0-9]{2})\s*(\d{1,4}[A-Z]?)\b/));
+	getWeather(airports);
 }
