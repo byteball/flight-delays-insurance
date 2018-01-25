@@ -41,9 +41,7 @@ exports.checkCriticalWeather = (flight_date, airports, callback) => {
 				}
 			};
 
-			const key = [airport, day, month, year].join('_')
-
-			cache.get(key)
+			cache.get(airport)
 				.then(weather => {
 					if (!weather) {
 						request({
@@ -59,14 +57,14 @@ exports.checkCriticalWeather = (flight_date, airports, callback) => {
 								throw error;
 
 							if (!body.zoneForecast) {
-								cache.set(key, 'none');
+								cache.set(airport, 'none');
 
 								return callback();
 							}
 
 							weather = body.zoneForecast.dayForecasts;
 
-							cache.set(key, weather);
+							cache.set(airport, weather);
 							check(weather);
 						});
 					} else if (weather == 'none')
