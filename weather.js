@@ -89,7 +89,7 @@ exports.checkCriticalWeather = (flight_date, airports, callback) => {
 
 			return checkWeatherAtAirport(airports[1]);
 		})
-		.then(check.then(status => {
+		.then(check => check.then(status => {
 			if (!status) {
 				return callback(texts.criticalWeather());
 			}

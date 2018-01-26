@@ -9,7 +9,7 @@ module.exports = class {
 		this.key = key
 		this.value = value
 
-		setInterval(this.clear, 1000*60, 1000, this);
+		setInterval(() => this.clear(), 1000*60, 1000, this);
 	}
 
 	clear(self) {
@@ -28,7 +28,13 @@ module.exports = class {
 	get(key) {
 		return new Promise((resolve, reject) => {
 			db.query(`SELECT ${this.value} FROM ${this.name}_cache WHERE ${this.key}=?`, [key], (rows) => {
-				resolve(rows.length ? JSON.parse(rows[0].value) : null)
+				let data = null
+
+				try {
+					data = JSON.parse(rows[0].value)
+				} catch (err) {}
+
+				resolve(rows.length ? data : null)
 			});
 		});
 	}
