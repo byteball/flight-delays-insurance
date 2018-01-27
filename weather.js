@@ -59,7 +59,7 @@ exports.checkCriticalWeather = (flight_date, airports, callback) => {
 							if (!body.zoneForecast) {
 								cache.set(airport, 'none');
 
-								return callback();
+								return resolve(true);
 							}
 
 							weather = body.zoneForecast.dayForecasts;
@@ -68,7 +68,7 @@ exports.checkCriticalWeather = (flight_date, airports, callback) => {
 							check(weather);
 						});
 					} else if (weather == 'none')
-						return callback();
+						return resolve(true);
 
 					check(weather);
 				})
