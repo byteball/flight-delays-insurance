@@ -31,6 +31,11 @@ exports.TIMESTAMPER_ADDRESS = 'I2ADHGP4HL6J37NQAD73J7E5SKFIXJOT'; // isTestnet ?
 //flightstats API
 exports.flightstats = {appId: '', appKey: ''};
 
+//
+exports.cacheHours = 7
+
+//Critical weather
+exports.critical = ['Hurricane', 'Tornado', 'Volcanic Ash'];
 
 //buttons
 exports.delayTime = [

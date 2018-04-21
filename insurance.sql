@@ -54,6 +54,12 @@ CREATE TABLE contracts (
 CREATE INDEX byCheckedTimeoutDate ON contracts(checked_timeout_date);
 CREATE INDEX byCheckedFlightDate ON contracts(checked_flight_date);
 
+CREATE TABLE `weather_cache` (
+	`airport`	TEXT NOT NULL UNIQUE,
+	`weather`	TEXT,
+	`ts`	INTEGER NOT NULL
+);
+
 /*
 
 ALTER TABLE states ADD COLUMN departure_airport CHAR(3);
