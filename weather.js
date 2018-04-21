@@ -2,6 +2,7 @@ const request = require('request');
 const moment = require('moment');
 const conf = require('byteballcore/conf');
 const notifications = require('./notifications');
+const texts = require('./texts');
 const Cache = require('./cache'),
 	cache = new Cache('weather', 'airport', 'weather');
 
@@ -29,16 +30,16 @@ exports.checkCriticalWeather = (flight_date, airports, callback) => {
 		return new Promise((resolve, reject) => {
 			const check = dayForecasts => {
 				for (const object of dayForecasts) {
-					if (object.start.replace(/(\d+)-(\d+)-(\d+).*/, '$1-$2-$3') == checkedDates[0] ||
-						object.start.replace(/(\d+)-(\d+)-(\d+).*/, '$1-$2-$3') == checkedDates[1] ||
-						object.start.replace(/(\d+)-(\d+)-(\d+).*/, '$1-$2-$3') == checkedDates[2]) {
-						if (conf.critical.indexOf(object.tags[0].value) != -1) {
-							resolve(false);
+					let date = object.start.replace(/(\d+)-(\d+)-(\d+).*/, '$1-$2-$3');
+					if (date == checkedDates[0] ||
+						date == checkedDates[1] ||
+						date == checkedDates[2]) {
+						if (conf.criticalConditions.indexOf(object.tags[0].value) != -1) {
+							return resolve(false);
 						}
 					}
-
-					resolve(true);
 				}
+				resolve(true);
 			};
 
 			cache.get(airport)
@@ -67,37 +68,37 @@ exports.checkCriticalWeather = (flight_date, airports, callback) => {
 							cache.set(airport, weather);
 							check(weather);
 						});
-					} else if (weather == 'none')
+						return;
+					}
+					else if (weather == 'none')
 						return resolve(true);
 
 					check(weather);
 				})
 				.catch(err => {
-					notifications.notifyAdmin('refund checkCriticalWeather failed', err);
-					callback('Internal error');
+					notifications.notifyAdmin('checkCriticalWeather failed', err);
+					resolve(true);
 				});
 		});
 	};
 
-	callback();
-
 	checkWeatherAtAirport(airports[0])
 		.then(status => {
+			console.error(airports[0]+' status '+status);
 			if (!status) {
 				return callback(texts.criticalWeather());
 			}
 
 			return checkWeatherAtAirport(airports[1]);
 		})
-		.then(check => check.then(status => {
+		.then(status => {
+			console.error(airports[1]+' status '+status);
+			if (status === undefined) // exited before
+				return;
 			if (!status) {
 				return callback(texts.criticalWeather());
 			}
 
 			callback();
-		}).catch(error => {
-			throw error;
-		})).catch(error => {
-			throw error;
 		});
 }

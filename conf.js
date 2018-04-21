@@ -35,7 +35,7 @@ exports.flightstats = {appId: '', appKey: ''};
 exports.cacheHours = 7
 
 //Critical weather
-exports.critical = ['Hurricane', 'Tornado', 'Volcanic Ash'];
+exports.criticalConditions = ['Hurricane', 'Tornado', 'Volcanic Ash'];
 
 //buttons
 exports.delayTime = [

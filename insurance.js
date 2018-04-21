@@ -20,6 +20,8 @@ let oracle_device_address;
 
 let assocWaitingStableFeednamesByUnits = {};
 
+process.on('unhandledRejection', up => { throw up; });
+
 headlessWallet.setupChatEventHandlers();
 
 function sendRequestsToOracle(rows) {

@@ -133,51 +133,49 @@ module.exports = (state, cb) => {
 					return cb('The insurance is refused due to critical weather.')
 				}
 
-				
+				state.departure_airport = objRatings.departure_airport;
+				state.arrival_airport = objRatings.arrival_airport;
+
+				let minDelay = 0;
+				let maxDelay = 0;
+
+				if (state.delay <= 15 || objRatings.delayMax <= 15) {
+					minDelay = 0;
+					maxDelay = 15;
+				} else if (state.delay <= 30 || objRatings.delayMax <= 30) {
+					minDelay = 15;
+					maxDelay = 30;
+				} else if (state.delay <= 45 || objRatings.delayMax <= 45) {
+					minDelay = 30;
+					maxDelay = 45;
+				} else {
+					minDelay = 45;
+					maxDelay = objRatings.delayMax;
+				}
+
+				let percentageDelays = 100 * getCountDelayedFlights(objRatings, maxDelay) / objRatings.observations;
+				let percentageDelays2 = 100 * getCountDelayedFlights(objRatings, minDelay) / objRatings.observations;
+
+				let percent;
+
+				percent = (percentageDelays2 + (percentageDelays - percentageDelays2) * (Math.min(state.delay, maxDelay) - minDelay) / (maxDelay - minDelay)) + conf.profitMargin;
+
+				if (percent > conf.maxPriceInPercent) {
+					return cb("The probability of this delay is too high, please increase the delay time.");
+				}
+				let price = state.compensation * percent / 100;
+				if (price.toString().match(/\./)) {
+					if (price.toString().split('.')[1].length > 9) price = price.toFixed(9);
+				}
+				if (objRatings.observations < conf.minObservations)
+					offlineCalculate(state, function(err, offline_price){
+						if (err)
+							return cb(err);
+						cb(null, Math.max(price, offline_price));
+					});
+				else
+					cb(null, price);
 			});
-
-			state.departure_airport = objRatings.departure_airport;
-			state.arrival_airport = objRatings.arrival_airport;
-
-			let minDelay = 0;
-			let maxDelay = 0;
-
-			if (state.delay <= 15 || objRatings.delayMax <= 15) {
-				minDelay = 0;
-				maxDelay = 15;
-			} else if (state.delay <= 30 || objRatings.delayMax <= 30) {
-				minDelay = 15;
-				maxDelay = 30;
-			} else if (state.delay <= 45 || objRatings.delayMax <= 45) {
-				minDelay = 30;
-				maxDelay = 45;
-			} else {
-				minDelay = 45;
-				maxDelay = objRatings.delayMax;
-			}
-
-			let percentageDelays = 100 * getCountDelayedFlights(objRatings, maxDelay) / objRatings.observations;
-			let percentageDelays2 = 100 * getCountDelayedFlights(objRatings, minDelay) / objRatings.observations;
-
-			let percent;
-
-			percent = (percentageDelays2 + (percentageDelays - percentageDelays2) * (Math.min(state.delay, maxDelay) - minDelay) / (maxDelay - minDelay)) + conf.profitMargin;
-
-			if (percent > conf.maxPriceInPercent) {
-				return cb("The probability of this delay is too high, please increase the delay time.");
-			}
-			let price = state.compensation * percent / 100;
-			if (price.toString().match(/\./)) {
-				if (price.toString().split('.')[1].length > 9) price = price.toFixed(9);
-			}
-			if (objRatings.observations < conf.minObservations)
-				offlineCalculate(state, function(err, offline_price){
-					if (err)
-						return cb(err);
-					cb(null, Math.max(price, offline_price));
-				});
-			else
-				cb(null, price);
 		});
 	} else {
 		offlineCalculate(state, cb);
