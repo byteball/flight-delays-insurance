@@ -46,7 +46,7 @@ function getRatings(flight, cb) {
 					return cb("Error from flightstats: " + jsonResult.error.errorMessage);
 				}
 
-				if (!Array.isArray(jsonResult.ratings)) return cb("No information about this flight.");
+				if (!Array.isArray(jsonResult.ratings) || jsonResult.ratings.length === 0) return cb("No information about this flight.");
 
 				let objRatings = chooseBestRating(jsonResult.ratings);
 				objRatings.departure_airport = objRatings.departureAirportFsCode;
