@@ -406,8 +406,6 @@ eventBus.on('headless_wallet_ready', () => {
 	db.query("SELECT name FROM sqlite_master WHERE type='table' AND name IN (?)", [arrTableNames], (rows) => {
 		if (rows.length !== arrTableNames.length) error += texts.errorInitSql();
 
-		if (conf.useSmtp && (!conf.smtpUser || !conf.smtpPassword || !conf.smtpHost)) error += texts.errorSmtp();
-
 		if (!conf.admin_email || !conf.from_email) error += texts.errorEmail();
 
 		if (conf.analysisOfRealTimeDelays && (!conf.flightstats.appId || !conf.flightstats.appKey || !conf.profitMargin)) error += texts.errorFlightstats();

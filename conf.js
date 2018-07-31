@@ -19,9 +19,6 @@ exports.bIgnoreUnpairRequests = true;
 exports.bSingleAddress = false;
 exports.KEYS_FILENAME = 'keys.json';
 
-//email
-exports.useSmtp = false;
-
 //contract
 exports.oracle_address = 'GFK3RDAPQLLNCMQEVGGD2KCPZTLSG3HN';
 exports.oracle_pairing_code = 'AuP4ngdv0S/rok+IaW1q2D6ye72eXLl3h+CqXNXzkBXn@byteball.org/bb#0000';

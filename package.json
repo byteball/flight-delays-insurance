@@ -11,7 +11,6 @@
   "dependencies": {
     "async": "^2.5.0",
     "byteballcore": "git+https://github.com/byteball/byteballcore.git",
-    "emailjs": "^1.0.10",
     "headless-byteball": "git+https://github.com/byteball/headless-byteball.git",
     "moment": "^2.18.1",
     "request": "^2.81.0"
