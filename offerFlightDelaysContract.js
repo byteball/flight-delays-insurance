@@ -2,7 +2,7 @@
 'use strict';
 const offerContract = require('./offerContract');
 const moment = require('moment');
-const db = require('byteballcore/db');
+const db = require('ocore/db');
 
 module.exports = (myAddress, event_date, contract, cb) => {
 	let arrSplitFlight = contract.flight.split(' ');

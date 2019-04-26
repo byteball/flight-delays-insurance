@@ -1,5 +1,5 @@
-const conf = require('byteballcore/conf');
-const db = require('byteballcore/db');
+const conf = require('ocore/conf');
+const db = require('ocore/db');
 
 const seconds = 60 * 60
 

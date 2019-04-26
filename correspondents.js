@@ -1,10 +1,10 @@
 /*jslint node: true */
 'use strict';
 
-const db = require('byteballcore/db');
+const db = require('ocore/db');
 
 exports.addCorrespondent = (code, name, cb) => {
-	let device = require('byteballcore/device');
+	let device = require('ocore/device');
 
 	function handleCode(code) {
 		let matches = code.match(/^([\w\/+]+)@([\w.:\/-]+)#([\w\/+-]+)$/);

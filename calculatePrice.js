@@ -2,9 +2,9 @@
 'use strict';
 const request = require('request');
 const notifications = require('./notifications');
-const db = require('byteballcore/db');
+const db = require('ocore/db');
 const moment = require('moment');
-const conf = require('byteballcore/conf');
+const conf = require('ocore/conf');
 const { checkCriticalWeather } = require('./weather');
 
 function getCountDelayedFlights(objRatings, delay) {

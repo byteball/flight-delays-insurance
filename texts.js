@@ -1,7 +1,7 @@
 /*jslint node: true */
 'use strict';
-const desktopApp = require('byteballcore/desktop_app.js');
-const conf = require('byteballcore/conf');
+const desktopApp = require('ocore/desktop_app.js');
+const conf = require('ocore/conf');
 const moment = require('moment');
 
 exports.invalidDate = () => {

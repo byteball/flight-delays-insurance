@@ -1,6 +1,6 @@
 /*jslint node: true */
 'use strict';
-const db = require('byteballcore/db');
+const db = require('ocore/db');
 
 exports.get = (device_address, cb) => {
 	db.query("SELECT * FROM states WHERE device_address = ? LIMIT 0,1", [device_address], (rows) => {

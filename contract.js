@@ -1,11 +1,11 @@
 /*jslint node: true */
 'use strict';
 
-const db = require('byteballcore/db');
-const device = require('byteballcore/device');
-const headlessWallet = require('headless-byteball');
+const db = require('ocore/db');
+const device = require('ocore/device');
+const headlessWallet = require('headless-obyte');
 const async = require('async');
-const conf = require('byteballcore/conf');
+const conf = require('ocore/conf');
 const notifications = require('./notifications.js');
 
 function getMyAddressFromContract(shared_address, cb) {

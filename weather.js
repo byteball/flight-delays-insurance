@@ -1,6 +1,6 @@
 const request = require('request');
 const moment = require('moment');
-const conf = require('byteballcore/conf');
+const conf = require('ocore/conf');
 const notifications = require('./notifications');
 const texts = require('./texts');
 const Cache = require('./cache'),

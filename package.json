@@ -10,8 +10,8 @@
   "license": "ISC",
   "dependencies": {
     "async": "^2.5.0",
-    "byteballcore": "git+https://github.com/byteball/byteballcore.git",
-    "headless-byteball": "git+https://github.com/byteball/headless-byteball.git",
+    "ocore": "git+https://github.com/byteball/ocore.git",
+    "headless-obyte": "git+https://github.com/byteball/headless-obyte.git",
     "moment": "^2.18.1",
     "request": "^2.81.0"
   }

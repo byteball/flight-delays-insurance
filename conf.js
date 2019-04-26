@@ -9,7 +9,7 @@ exports.bLight = false;
 exports.storage = 'sqlite';
 
 
-exports.hub = 'byteball.org/bb';
+exports.hub = process.env.testnet ? 'obyte.org/bb-test' : 'obyte.org/bb';
 exports.deviceName = 'Flight Delay Insurance';
 exports.permanent_pairing_secret = '0000';
 exports.control_addresses = [];
@@ -21,7 +21,7 @@ exports.KEYS_FILENAME = 'keys.json';
 
 //contract
 exports.oracle_address = 'GFK3RDAPQLLNCMQEVGGD2KCPZTLSG3HN';
-exports.oracle_pairing_code = 'AuP4ngdv0S/rok+IaW1q2D6ye72eXLl3h+CqXNXzkBXn@byteball.org/bb#0000';
+exports.oracle_pairing_code = 'AuP4ngdv0S/rok+IaW1q2D6ye72eXLl3h+CqXNXzkBXn@obyte.org/bb#0000';
 exports.TIMESTAMPER_ADDRESS = 'I2ADHGP4HL6J37NQAD73J7E5SKFIXJOT'; // isTestnet ? 'OPNUXBRSSQQGHKQNEPD2GLWQYEUY5XLD' : 'I2ADHGP4HL6J37NQAD73J7E5SKFIXJOT'
 
 

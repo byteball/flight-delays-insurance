@@ -1,14 +1,14 @@
 /*jslint node: true */
 'use strict';
-const conf = require('byteballcore/conf');
-const headlessWallet = require('headless-byteball');
-const db = require('byteballcore/db');
+const conf = require('ocore/conf');
+const headlessWallet = require('headless-obyte');
+const db = require('ocore/db');
 const moment = require('moment');
-const constants = require('byteballcore/constants');
+const constants = require('ocore/constants');
 
 
 module.exports = (myAddress, event_date, contract, cb) => {
-	let device = require('byteballcore/device.js');
+	let device = require('ocore/device.js');
 
 	let defaultContract = {
 		timeout: conf.contractTimeout,
@@ -112,7 +112,7 @@ module.exports = (myAddress, event_date, contract, cb) => {
 			}
 		};
 
-		let walletDefinedByAddresses = require('byteballcore/wallet_defined_by_addresses.js');
+		let walletDefinedByAddresses = require('ocore/wallet_defined_by_addresses.js');
 		walletDefinedByAddresses.createNewSharedAddress(arrDefinition, assocSignersByPath, {
 			ifError: (err) => {
 				cb(err);
@@ -144,13 +144,13 @@ module.exports = (myAddress, event_date, contract, cb) => {
 
 function readLastMainChainIndex(cb) {
 	if (conf.bLight) {
-		let network = require('byteballcore/network.js');
+		let network = require('ocore/network.js');
 		network.requestFromLightVendor('get_last_mci', null, (ws, request, response) => {
 			response.error ? cb(response.error) : cb(null, response);
 		});
 	}
 	else {
-		let storage = require('byteballcore/storage');
+		let storage = require('ocore/storage');
 		storage.readLastMainChainIndex((last_mci) => {
 			cb(null, last_mci);
 		});

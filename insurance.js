@@ -1,19 +1,19 @@
 /*jslint node: true */
 'use strict';
-const conf = require('byteballcore/conf');
-const db = require('byteballcore/db');
-const eventBus = require('byteballcore/event_bus');
-const headlessWallet = require('headless-byteball');
+const conf = require('ocore/conf');
+const db = require('ocore/db');
+const eventBus = require('ocore/event_bus');
+const headlessWallet = require('headless-obyte');
 const texts = require('./texts');
 const states = require('./states');
 const moment = require('moment');
 const calculatePrice = require('./calculatePrice');
 const offerFlightDelaysContract = require('./offerFlightDelaysContract');
-const validationUtils = require('byteballcore/validation_utils');
+const validationUtils = require('ocore/validation_utils');
 const notifications = require('./notifications');
 const correspondents = require('./correspondents');
 const contract = require('./contract');
-const wallet = require('byteballcore/wallet');
+const wallet = require('ocore/wallet');
 const async = require('async');
 
 let oracle_device_address;
@@ -25,7 +25,7 @@ process.on('unhandledRejection', up => { throw up; });
 headlessWallet.setupChatEventHandlers();
 
 function sendRequestsToOracle(rows) {
-	let device = require('byteballcore/device');
+	let device = require('ocore/device');
 	if (!rows.length) return;
 
 	rows.forEach((row) => {
@@ -52,7 +52,7 @@ function refund(contractRow) {
 }
 
 function payToPeer(contractRow) {
-	let device = require('byteballcore/device');
+	let device = require('ocore/device');
 	if (contractRow.asset) {
 		headlessWallet.sendAssetFromAddress(contractRow.asset, contractRow.amount, contractRow.shared_address, contractRow.peer_address, contractRow.peer_device_address, (err, unit) => {
 			if (err) return notifications.notifyAdmin('payToPeer sendAssetFromAddress failed', err);
@@ -66,7 +66,7 @@ function payToPeer(contractRow) {
 }
 
 function checkStatusOfContracts(rows) {
-	let device = require('byteballcore/device');
+	let device = require('ocore/device');
 	let arrFeedNames = rows.map(row => row.feed_name);
 	let assocContractsByFeedName = {};
 	rows.forEach((row) => {
@@ -126,7 +126,7 @@ eventBus.on('mci_became_stable', (mci) => {
 
 
 eventBus.on('new_my_transactions', (arrUnits) => {
-	let device = require('byteballcore/device.js');
+	let device = require('ocore/device.js');
 	db.query(
 		"SELECT outputs.amount, peer_amount, outputs.asset AS received_asset, contracts.asset AS expected_asset, peer_device_address \n\
 		FROM outputs JOIN contracts ON address=shared_address \n\
@@ -146,7 +146,7 @@ eventBus.on('new_my_transactions', (arrUnits) => {
 
 
 eventBus.on('paired', (from_address) => {
-	let device = require('byteballcore/device.js');
+	let device = require('ocore/device.js');
 	device.sendMessageToDevice(from_address, 'text', texts.flight());
 });
 
@@ -170,7 +170,7 @@ eventBus.on('text', (from_address, text) => {
 	if (from_address === oracle_device_address) return;
 
 	states.get(from_address, (state) => {
-		let device = require('byteballcore/device.js');
+		let device = require('ocore/device.js');
 		let ucText = text.toUpperCase().trim().replace(/\s+/, ' ');
 
 		if (getHelpText(ucText)) return device.sendMessageToDevice(from_address, 'text', getHelpText(ucText));
