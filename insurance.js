@@ -18,7 +18,7 @@ const async = require('async');
 
 let oracle_device_address;
 
-let assocWaitingStableFeednamesByUnits = {};
+let assocPendingFeednames = {};
 
 process.on('unhandledRejection', up => { throw up; });
 
@@ -29,6 +29,7 @@ function sendRequestsToOracle(rows) {
 	if (!rows.length) return;
 
 	rows.forEach((row) => {
+		assocPendingFeednames[row.feed_name] = true;
 		let name = row.feed_name.split('-')[0] + ' ' + moment(row.date).format("DD.MM.YYYY");
 		device.sendMessageToDevice(oracle_device_address, 'text', name);
 	});
@@ -66,60 +67,43 @@ function payToPeer(contractRow) {
 }
 
 function checkStatusOfContracts(rows) {
-	let device = require('ocore/device');
-	let arrFeedNames = rows.map(row => row.feed_name);
 	let assocContractsByFeedName = {};
 	rows.forEach((row) => {
 		if (!assocContractsByFeedName[row.feed_name]) assocContractsByFeedName[row.feed_name] = [];
 		assocContractsByFeedName[row.feed_name].push(row);
 	});
-	db.query("SELECT data_feeds.feed_name, data_feeds.int_value, units.unit, units.is_stable\n\
-	FROM data_feeds JOIN unit_authors USING(unit) JOIN units USING(unit)\n\
-	WHERE data_feeds.feed_name IN(?)\n\
-	AND unit_authors.address = ?", [arrFeedNames, conf.oracle_address], (rows2) => {
-		rows2.forEach((row) => {
-			if (assocContractsByFeedName[row.feed_name]) {
-				assocContractsByFeedName[row.feed_name].forEach((contractRow) => {
-					if (row.int_value > contractRow.delay) {
-						if (row.is_stable) {
-							payToPeer(contractRow);
-						} else {
-							assocWaitingStableFeednamesByUnits[row.unit] = row.feed_name;
-						}
-						contract.setWinnerAndCheckedFlightDate(contractRow.feed_name, 'peer');
-					} else {
-						device.sendMessageToDevice(contractRow.peer_device_address, 'text', texts.arrivedOnTime());
-						if (row.is_stable) {
-							refund(contractRow);
-						} else {
-							assocWaitingStableFeednamesByUnits[row.unit] = row.feed_name;
-						}
-						contract.setWinnerAndCheckedFlightDate(contractRow.feed_name, 'me');
-					}
-				});
+	Object.keys(assocContractsByFeedName).forEach(feed_name => checkStatusOfContract(feed_name, assocContractsByFeedName[feed_name]));
+}
+
+function checkStatusOfContract(feed_name, arrContracts) {
+	let device = require('ocore/device');
+	let data_feeds = require('ocore/data_feeds');
+	data_feeds.readDataFeedValue([conf.oracle_address], feed_name, null, 0, 1e15, false, 'last', function (objResult) {
+		let delay = objResult.value;
+		if (delay === undefined)
+			return;
+		arrContracts.forEach((contractRow) => {
+			if (delay > contractRow.delay) {
+				payToPeer(contractRow);
+				contract.setWinnerAndCheckedFlightDate(contractRow.feed_name, 'peer');
+			} else {
+				device.sendMessageToDevice(contractRow.peer_device_address, 'text', texts.arrivedOnTime());
+				refund(contractRow);
+				contract.setWinnerAndCheckedFlightDate(contractRow.feed_name, 'me');
 			}
 		});
+		delete assocPendingFeednames[feed_name];
 	});
 }
 
 eventBus.on('mci_became_stable', (mci) => {
-	let arrWaitingStableUnits = Object.keys(assocWaitingStableFeednamesByUnits);
-	if (arrWaitingStableUnits.length === 0)
+	if (Object.keys(assocPendingFeednames).length === 0)
 		return;
-	db.query("SELECT unit FROM units WHERE main_chain_index = ? AND unit IN(?)", [mci, arrWaitingStableUnits], (rows) => {
-		rows.forEach((row) => {
-			contract.getContractsByFeedName(assocWaitingStableFeednamesByUnits[row.unit], (rowsContracts) => {
-				rowsContracts.forEach((contractRow) => {
-					if (contractRow.winner) {
-						if (contractRow.winner === 'me') {
-							refund(contractRow);
-						} else if (contractRow.winner === 'peer') {
-							payToPeer(contractRow);
-						}
-					}
-				});
-				delete assocWaitingStableFeednamesByUnits[row.unit];
-			});
+	db.query("SELECT 1 FROM unit_authors WHERE _mci = ? AND address=?", [mci, conf.oracle_address], rows => {
+		if (rows.length === 0)
+			return;
+		contract.getListOfContactsForVerification((rows) => {
+			checkStatusOfContracts(rows);
 		});
 	});
 });

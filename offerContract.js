@@ -49,7 +49,7 @@ module.exports = (myAddress, event_date, contract, cb) => {
 		let expiry_address = (contract.expiry_party === 'me') ? myAddress : contract.peerAddress;
 		let data_device_address = (contract.data_party === 'me') ? device.getMyDeviceAddress() : contract.peerDeviceAddress;
 		let expiry_device_address = (contract.expiry_party === 'me') ? device.getMyDeviceAddress() : contract.peerDeviceAddress;
-		let timeout = Date.now() + Math.round(contract.timeout * 3600 * 1000);
+		let timeout = Math.round(Date.now()/1000 + contract.timeout * 3600);
 		let arrReverseCondition = ['in data feed', [[conf.oracle_address], contract.feed_name, contract.reverseRelation, contract.feedValue + '', last_mci]];
 		let arrMyCondition = (contract.peerAsset === "base") 
 			? arrReverseCondition 
@@ -75,7 +75,7 @@ module.exports = (myAddress, event_date, contract, cb) => {
 					]],
 					['and', [
 						['address', expiry_address],
-						['in data feed', [[conf.TIMESTAMPER_ADDRESS], 'timestamp', '>', moment(event_date, 'DD.MM.YYYY').valueOf() + Math.round(contract.expiry * 24 * 3600 * 1000)]]
+						['timestamp', ['>', Math.round(moment(event_date, 'DD.MM.YYYY').valueOf()/1000 + contract.expiry * 24 * 3600)]]
 					]],
 					['and', [
 						['address', myAddress],
@@ -86,7 +86,7 @@ module.exports = (myAddress, event_date, contract, cb) => {
 			['and', [
 				['address', myAddress],
 				['not', arrSeenCondition],
-				['in data feed', [[conf.TIMESTAMPER_ADDRESS], 'timestamp', '>', timeout]]
+				['timestamp', ['>', timeout]]
 			]]
 		]];
 		let assocSignersByPath = {

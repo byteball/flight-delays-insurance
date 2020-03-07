@@ -22,7 +22,6 @@ exports.KEYS_FILENAME = 'keys.json';
 //contract
 exports.oracle_address = 'GFK3RDAPQLLNCMQEVGGD2KCPZTLSG3HN';
 exports.oracle_pairing_code = 'AuP4ngdv0S/rok+IaW1q2D6ye72eXLl3h+CqXNXzkBXn@obyte.org/bb#0000';
-exports.TIMESTAMPER_ADDRESS = process.env.testnet ? 'OPNUXBRSSQQGHKQNEPD2GLWQYEUY5XLD' : 'I2ADHGP4HL6J37NQAD73J7E5SKFIXJOT';
 
 
 //flightstats API

@@ -6,6 +6,7 @@ const device = require('ocore/device');
 const headlessWallet = require('headless-obyte');
 const async = require('async');
 const conf = require('ocore/conf');
+const storage = require('ocore/storage');
 const notifications = require('./notifications.js');
 
 function getMyAddressFromContract(shared_address, cb) {
@@ -17,19 +18,9 @@ function getMyAddressFromContract(shared_address, cb) {
 exports.getMyAddressFromContract = getMyAddressFromContract;
 
 exports.checkAndRefundContractsTimeout = () => {
-	db.query(
-		"SELECT shared_address, peer_amount FROM data_feeds, contracts \n\
-		WHERE unit IN (\n\
-			SELECT unit_authors.unit FROM unit_authors JOIN units USING(unit)\n\
-			WHERE address = ? \n\
-			AND units.is_stable = 1\n\
-			ORDER BY unit_authors.rowid DESC LIMIT 0,1\n\
-		)\n\
-		AND data_feeds.feed_name = 'timestamp'\n\
-		AND contracts.checked_timeout_date IS NULL \n\
-		AND contracts.timeout < data_feeds.int_value", 
-		[conf.TIMESTAMPER_ADDRESS], 
-		rows => {
+	storage.readLastStableMcUnitProps(db, objUnitProps => {
+		const timestamp = objUnitProps.timestamp;
+		db.query("SELECT shared_address, peer_amount FROM contracts WHERE timeout<? AND checked_timeout_date IS NULL", [timestamp], rows => {
 			if (!rows.length) return;
 			let arrAddressesToRefund = [];
 			let arrFullyFundedAddresses = [];
@@ -67,8 +58,8 @@ exports.checkAndRefundContractsTimeout = () => {
 					});
 				});
 			});
-		}
-	);
+		});
+	});
 };
 
 exports.getListOfContactsForVerification = (cb) => {
