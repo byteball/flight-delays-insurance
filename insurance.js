@@ -78,7 +78,7 @@ function checkStatusOfContracts(rows) {
 function checkStatusOfContract(feed_name, arrContracts) {
 	let device = require('ocore/device');
 	let data_feeds = require('ocore/data_feeds');
-	data_feeds.readDataFeedValue([conf.oracle_address], feed_name, null, 0, 1e15, false, 'last', function (objResult) {
+	data_feeds.readDataFeedValue([conf.oracle_address], feed_name, null, 0, 1e15, false, 'last', 0, function (objResult) {
 		let delay = objResult.value;
 		if (delay === undefined)
 			return;
